@@ -64,7 +64,8 @@ public class App {
                 launcher.prettyprint();                
         Path root = Path.of("spooned");
         try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {
-            walk.filter(v -> !v.toString().endsWith("java")).forEach(oldPath -> {
+            walk.filter(v -> !v.toString().endsWith("java"))
+            .filter(v -> !v.toString().contains(".git")).forEach(oldPath -> {
                 try {
                     Path newLocation = root.resolve(oldPath);
                     if (Files.isDirectory(oldPath)) {
