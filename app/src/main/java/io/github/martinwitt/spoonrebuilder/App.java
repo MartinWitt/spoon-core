@@ -56,7 +56,8 @@ public class App {
         // Fixes:
                 model.getElements(new TypeFilter<>(CtAnnotation.class)).stream()
                         .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
-        
+        model.getElements(new TypeFilter<>(CtMethod.class)).stream().filter(v -> v.hasAnnotation(Override.class))
+        .forEach(v -> v.replace(v.clone()));
                 launcher.prettyprint();                
         Path root = Path.of("spooned");
         try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {

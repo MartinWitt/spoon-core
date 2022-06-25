@@ -31,7 +31,7 @@ public class CastSniperFixer implements Consumer<Path> {
         for (String type : names) {
           content = content.replaceAll("\\(\\(" + type +"(?:<.*>)?"+ "\\)\\)",
               "(" + type + ")");
-          content.replaceAll("finalspoon", "final spoon");
+          content = content.replaceAll("finalspoon", "final spoon");
         }
         Files.writeString(path, content, StandardOpenOption.TRUNCATE_EXISTING);
       } catch (IOException e) {
