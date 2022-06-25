@@ -1,6 +1,7 @@
 package io.github.martinwitt.spoonrebuilder;
 
 import java.util.ArrayList;
+import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
@@ -8,8 +9,6 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.visitor.CtAbstractBiScanner;
-import spoon.reflect.visitor.CtAbstractVisitor;
 import spoon.reflect.visitor.CtScanner;
 
 public class GenericVisitor extends CtScanner {
@@ -31,11 +30,15 @@ public class GenericVisitor extends CtScanner {
   }
 
   private void handleRef(CtTypeReference<?> clazzRef, CtType<?> clazz) {
-    if (clazz != null && !clazz.isParameterized() && !clazzRef.getActualTypeArguments().isEmpty()) {
+    if (clazz != null && !clazz.isParameterized() && !clazzRef.getActualTypeArguments().isEmpty() && isNotCtLiteral(clazz)) {
       clazzRef.setActualTypeArguments(new ArrayList<>());
       markElementForSniperPrinting(clazzRef);
 
     }
+  }
+  
+  private boolean isNotCtLiteral(CtType<?> clazz) {
+    return !clazz.isSubtypeOf(clazz.getFactory().createCtTypeReference(CtLiteral.class));
   }
 
   @Override

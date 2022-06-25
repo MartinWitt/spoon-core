@@ -18,6 +18,7 @@ import io.github.martinwitt.spoonrebuilder.fixes.CtAnnotationProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.CtTargetedExpressionProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.NewInstanceProcessor;
+import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
@@ -53,6 +54,8 @@ public class App {
         GetActualClassProcessor getActualClassProcessor = new GetActualClassProcessor();
         model.getElements(new TypeFilter<>(CtMethod.class))
                 .forEach(getActualClassProcessor::process);
+        TemplateParameterProcessor templateParameterProcessor = new TemplateParameterProcessor();
+        model.getElements(new TypeFilter<>(CtMethod.class)).forEach(templateParameterProcessor::process);
         // Fixes:
                 model.getElements(new TypeFilter<>(CtAnnotation.class)).stream()
                         .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
