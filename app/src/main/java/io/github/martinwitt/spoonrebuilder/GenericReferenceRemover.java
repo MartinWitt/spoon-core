@@ -9,9 +9,11 @@ import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.path.CtRole;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.reference.CtWildcardReference;
 
 public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?>> {
 
@@ -37,11 +39,20 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
 
         }
       }
-    } else if (reference instanceof CtTypeParameterReference) {
+    } else if (reference instanceof CtTypeParameterReference tpr
+        && !(tpr instanceof CtWildcardReference) // wildcard can be ignored
+        && tpr.getDeclaration() == null // assumption: declaration was already deleted
+    ) {
       boundsAccessor.apply(reference.getSimpleName(), reference.getParent(CtType.class))
-          .ifPresent(element -> {
+          .ifPresentOrElse(element -> {
             process(element); // might have an outdated bound too
             reference.replace(element);
+          }, () -> {
+            if (reference.getParent() instanceof CtTypeParameter tp) {
+              tp.setSuperclass(null);
+            } else {
+              reference.replace(reference.getFactory().createWildcardReference());
+            }
           });
     }
   }

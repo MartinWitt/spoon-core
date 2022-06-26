@@ -3,22 +3,12 @@
  */
 package io.github.martinwitt.spoonrebuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
-import io.github.martinwitt.spoonrebuilder.fixes.CtAnnotationProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.NewInstanceProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
+import org.apache.commons.lang3.tuple.Pair;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.SourcePosition;
@@ -28,6 +18,16 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.sniper.SniperJavaPrettyPrinter;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class App {
 
@@ -43,8 +43,6 @@ public class App {
         model.getElements(new TypeFilter<>(CtTypeReference.class))
                 .forEach(genericReferenceRemover::process);
         List<CtMethod<?>> methods = model.getElements(new TypeFilter<>(CtMethod.class));
-        CtAnnotationProcessor annotationProcessor = new CtAnnotationProcessor();
-        methods.forEach(annotationProcessor::process);
         NewInstanceProcessor newInstanceProcessor = new NewInstanceProcessor();
         methods.forEach(newInstanceProcessor::process);
         GetActualClassProcessor getActualClassProcessor = new GetActualClassProcessor();
