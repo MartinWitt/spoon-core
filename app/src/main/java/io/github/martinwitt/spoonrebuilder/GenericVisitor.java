@@ -22,9 +22,7 @@ public class GenericVisitor extends CtScanner {
     }
     
     for (CtTypeReference<?> superReference : ctClass.getSuperInterfaces()) {
-      if (superReference.getDeclaration() != null) {
-        handleRef(superReference, superReference.getDeclaration());
-      }
+      handleRef(superReference, superReference.getDeclaration());
     }
     super.visitCtClass(ctClass);
   }
@@ -44,7 +42,7 @@ public class GenericVisitor extends CtScanner {
   @Override
   public <T> void visitCtInterface(CtInterface<T> intrface) {
     for (CtTypeReference<?> ref : intrface.getSuperInterfaces()) {
-      handleRef(ref, intrface);
+      handleRef(ref, ref.getDeclaration());
     }
     super.visitCtInterface(intrface);
   }

@@ -45,21 +45,20 @@ public class App {
                 .forEach(genericReferenceRemover::process);
         CtTargetedExpressionProcessor targetedExpressionProcessor =
                 new CtTargetedExpressionProcessor();
-        model.getElements(new TypeFilter<>(CtMethod.class))
-                .forEach(targetedExpressionProcessor::process);
+        List<CtMethod<?>> methods = model.getElements(new TypeFilter<>(CtMethod.class));
+        methods.forEach(targetedExpressionProcessor::process);
         CtAnnotationProcessor annotationProcessor = new CtAnnotationProcessor();
-        model.getElements(new TypeFilter<>(CtMethod.class)).forEach(annotationProcessor::process);
+        methods.forEach(annotationProcessor::process);
         NewInstanceProcessor newInstanceProcessor = new NewInstanceProcessor();
-        model.getElements(new TypeFilter<>(CtMethod.class)).forEach(newInstanceProcessor::process);
+        methods.forEach(newInstanceProcessor::process);
         GetActualClassProcessor getActualClassProcessor = new GetActualClassProcessor();
-        model.getElements(new TypeFilter<>(CtMethod.class))
-                .forEach(getActualClassProcessor::process);
+        methods.forEach(getActualClassProcessor::process);
         TemplateParameterProcessor templateParameterProcessor = new TemplateParameterProcessor();
-        model.getElements(new TypeFilter<>(CtMethod.class)).forEach(templateParameterProcessor::process);
+        methods.forEach(templateParameterProcessor::process);
         // Fixes:
                 model.getElements(new TypeFilter<>(CtAnnotation.class)).stream()
                         .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
-        model.getElements(new TypeFilter<>(CtMethod.class)).stream().filter(v -> v.hasAnnotation(Override.class))
+        methods.stream().filter(v -> v.hasAnnotation(Override.class))
         .forEach(v -> v.replace(v.clone()));
                 launcher.prettyprint();                
         Path root = Path.of("spooned");
