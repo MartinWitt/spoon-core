@@ -5,7 +5,6 @@ package io.github.martinwitt.spoonrebuilder;
 
 import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
-import io.github.martinwitt.spoonrebuilder.fixes.NewInstanceProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -43,8 +42,6 @@ public class App {
         model.getElements(new TypeFilter<>(CtTypeReference.class))
                 .forEach(genericReferenceRemover::process);
         List<CtMethod<?>> methods = model.getElements(new TypeFilter<>(CtMethod.class));
-        NewInstanceProcessor newInstanceProcessor = new NewInstanceProcessor();
-        methods.forEach(newInstanceProcessor::process);
         GetActualClassProcessor getActualClassProcessor = new GetActualClassProcessor();
         methods.forEach(getActualClassProcessor::process);
         TemplateParameterProcessor templateParameterProcessor = new TemplateParameterProcessor();

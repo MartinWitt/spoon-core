@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 import spoon.processing.AbstractProcessor;
+import spoon.reflect.code.CtExpression;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
@@ -50,6 +51,10 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
           }, () -> {
             if (reference.getParent() instanceof CtTypeParameter tp) {
               tp.setSuperclass(null);
+            } else if (reference.getParent() instanceof CtMethod<?> m && m.getType() == reference) {
+              reference.replace(reference.getFactory().Type().objectType());
+            } else if (reference.getParent() instanceof CtExpression<?> e && reference.getRoleInParent() == CtRole.CAST) {
+              e.setTypeCasts(e.getTypeCasts().stream().filter(ref -> ref != reference).toList());
             } else {
               reference.replace(reference.getFactory().createWildcardReference());
             }
