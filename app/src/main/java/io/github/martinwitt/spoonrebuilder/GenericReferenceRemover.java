@@ -12,6 +12,7 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.path.CtRole;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtWildcardReference;
@@ -34,7 +35,8 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
       if (!type.isParameterized()) {
         reference.setActualTypeArguments(new ArrayList<>());
         markElementForSniperPrinting(reference);
-        if (CtRole.CAST.equals(reference.getRoleInParent())) {
+        CtRole roleInParent = reference.getRoleInParent();
+        if (roleInParent == CtRole.CAST || roleInParent == CtRole.TYPE_ARGUMENT) {
           markElementForSniperPrinting(reference.getParent(CtMethod.class));
           markElementForSniperPrinting(reference.getParent());
 
@@ -55,7 +57,7 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
               reference.replace(reference.getFactory().Type().objectType());
             } else if (reference.getParent() instanceof CtExpression<?> e && reference.getRoleInParent() == CtRole.CAST) {
               e.setTypeCasts(e.getTypeCasts().stream().filter(ref -> ref != reference).toList());
-            } else {
+            } else if (!(reference.getParent() instanceof CtExecutableReference<?> && reference.getRoleInParent() == CtRole.TYPE_ARGUMENT)){
               reference.replace(reference.getFactory().createWildcardReference());
             }
           });

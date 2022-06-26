@@ -4,6 +4,8 @@
 package io.github.martinwitt.spoonrebuilder;
 
 import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
+import io.github.martinwitt.spoonrebuilder.fixes.FileFixer;
+import io.github.martinwitt.spoonrebuilder.fixes.GenericTypeArgumentsFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
@@ -69,13 +71,13 @@ public class App {
                 }
             });
         }
-        CastSniperFixer sniperFixer = new CastSniperFixer(model.getAllTypes());
-        VarArgsFixer varArgsFixer = new VarArgsFixer();
+        FileFixer fileFixer = new FileFixer(
+            new CastSniperFixer(model.getAllTypes())
+                .andThen(new VarArgsFixer())
+                .andThen(new GenericTypeArgumentsFixer())
+        );
         try (Stream<Path> walk = Files.walk(Path.of("spooned"))) {
-            walk.forEach(sniperFixer::accept);
-        }
-        try (Stream<Path> walk = Files.walk(Path.of("spooned"))) {
-            walk.forEach(varArgsFixer::accept);
+            walk.forEach(fileFixer);
         }
     }
 
