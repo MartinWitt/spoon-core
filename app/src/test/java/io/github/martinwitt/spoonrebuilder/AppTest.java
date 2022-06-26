@@ -3,11 +3,9 @@
  */
 package io.github.martinwitt.spoonrebuilder;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import org.checkerframework.checker.units.qual.C;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtType;
@@ -37,7 +35,7 @@ class AppTest {
         Iterator<CtType<?>> iterator = launcher.getModel().getAllTypes().iterator();
         var foo = iterator.next();
         var bar = iterator.next();
-        GenericReferenceRemover referenceRemover = new GenericReferenceRemover();
+        GenericReferenceRemover referenceRemover = new GenericReferenceRemover((__, ___) -> Optional.empty());
         referenceRemover.setFactory(launcher.getFactory());
         launcher.getModel().getElements(new TypeFilter<>(CtTypeReference.class))
                 .forEach(referenceRemover::process);

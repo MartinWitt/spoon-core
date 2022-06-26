@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.CtAnnotationProcessor;
-import io.github.martinwitt.spoonrebuilder.fixes.CtTargetedExpressionProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.NewInstanceProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
@@ -40,13 +39,10 @@ public class App {
         model.getAllTypes().forEach(remover::process);
         GenericVisitor visitor = new GenericVisitor();
         model.getAllTypes().forEach(v -> v.accept(visitor));
-        GenericReferenceRemover genericReferenceRemover = new GenericReferenceRemover();
+        GenericReferenceRemover genericReferenceRemover = new GenericReferenceRemover(remover);
         model.getElements(new TypeFilter<>(CtTypeReference.class))
                 .forEach(genericReferenceRemover::process);
-        CtTargetedExpressionProcessor targetedExpressionProcessor =
-                new CtTargetedExpressionProcessor();
         List<CtMethod<?>> methods = model.getElements(new TypeFilter<>(CtMethod.class));
-        methods.forEach(targetedExpressionProcessor::process);
         CtAnnotationProcessor annotationProcessor = new CtAnnotationProcessor();
         methods.forEach(annotationProcessor::process);
         NewInstanceProcessor newInstanceProcessor = new NewInstanceProcessor();
@@ -60,7 +56,7 @@ public class App {
                         .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
         methods.stream().filter(v -> v.hasAnnotation(Override.class))
         .forEach(v -> v.replace(v.clone()));
-                launcher.prettyprint();                
+        launcher.prettyprint();
         Path root = Path.of("spooned");
         try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {
             walk.filter(v -> !v.toString().endsWith("java"))

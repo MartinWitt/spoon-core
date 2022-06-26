@@ -1,20 +1,32 @@
 package io.github.martinwitt.spoonrebuilder;
 
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.function.BiFunction;
+
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.path.CtRole;
+import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 
 public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?>> {
 
+  private final BiFunction<String, CtType<?>, Optional<CtTypeReference<?>>> boundsAccessor;
+
+  public GenericReferenceRemover(BiFunction<String, CtType<?>, Optional<CtTypeReference<?>>> boundsAccessor) {
+    this.boundsAccessor = boundsAccessor;
+  }
+
   @Override
   public void process(CtTypeReference<?> reference) {
-    if(reference.getPackage() !=null && reference.getDeclaration() != null && !reference
-        .getActualTypeArguments().isEmpty()) {
+    if(reference.getPackage() != null
+        && reference.getDeclaration() != null
+        && !reference.getActualTypeArguments().isEmpty()
+    ) {
       CtType<?> type = reference.getDeclaration();
       if (!type.isParameterized()) {
         reference.setActualTypeArguments(new ArrayList<>());
@@ -25,7 +37,13 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
 
         }
       }
-    }    
+    } else if (reference instanceof CtTypeParameterReference) {
+      boundsAccessor.apply(reference.getSimpleName(), reference.getParent(CtType.class))
+          .ifPresent(element -> {
+            process(element); // might have an outdated bound too
+            reference.replace(element);
+          });
+    }
   }
 
   private boolean isSpoonType(CtTypeReference<?> element) {
