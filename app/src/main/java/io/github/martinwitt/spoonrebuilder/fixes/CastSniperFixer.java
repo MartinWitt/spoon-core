@@ -13,7 +13,7 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtTypeReference;
 
 public class CastSniperFixer implements Consumer<Path> {
-  private Iterable<CtType<?>> types;
+  private final Set<String> names;
 
   private Set<String> fileNames = new HashSet<>();
   @Override
@@ -21,12 +21,6 @@ public class CastSniperFixer implements Consumer<Path> {
     if (!Files.isDirectory(path) && path.getFileName().toString().endsWith("java")) {
       try {
         String content = Files.readString(path);
-        var names  = StreamSupport.stream(types.spliterator(), false)
-            .flatMap(v -> v.getReferencedTypes().stream()).map(CtTypeReference::getSimpleName)
-            .collect(Collectors.toSet());
-        for(char alphabet : "abcdefghijklmnopqrstuvwxyz".toCharArray()) {
-          names.add(Character.toString(alphabet).toUpperCase());
-        }
 
         for (String type : names) {
           content = content.replaceAll("\\(\\(" + type +"(?:<.*>)?"+ "\\)\\)",
@@ -45,10 +39,15 @@ public class CastSniperFixer implements Consumer<Path> {
    * @param types
    */
   public CastSniperFixer(Iterable<CtType<?>> types) {
-    this.types = types;
     fileNames.add("AbstractTypingContext");
     fileNames.add("ClassTypingContext");
     fileNames.add("ReplacementVisitor");
+    this.names  = StreamSupport.stream(types.spliterator(), false)
+        .flatMap(v -> v.getReferencedTypes().stream()).map(CtTypeReference::getSimpleName)
+        .collect(Collectors.toSet());
+    for(char alphabet : "abcdefghijklmnopqrstuvwxyz".toCharArray()) {
+      names.add(Character.toString(alphabet).toUpperCase());
+    }
   }
   
   
