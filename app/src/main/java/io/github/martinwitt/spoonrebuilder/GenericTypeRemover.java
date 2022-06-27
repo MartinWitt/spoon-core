@@ -14,6 +14,7 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.template.TemplateParameter;
 
 /**
  * Removes the generics from all CtElements
@@ -23,7 +24,7 @@ public class GenericTypeRemover extends AbstractProcessor<CtType<?>>
   private final Map<CtType<?>, Map<String, CtTypeReference<?>>> bounds = new HashMap<>();
   @Override
   public void process(CtType<?> element) {
-    if (isSpoonType(element) && (isSubtypeOfCtElement(element) || isSubtypeOfCtRHSReceiver(element)) && isNotCtLiteral(element)) {
+    if (isSpoonType(element) && (isSubtypeOfCtElement(element) || isSubtypeOfCtRHSReceiver(element) || isCtTemplateParameter(element)) && isNotCtLiteral(element)) {
       List<CtTypeParameter> formalCtTypeParameters = element.getFormalCtTypeParameters();
       for (CtTypeParameter parameter : formalCtTypeParameters) {
         CtTypeReference<?> superclass = parameter.getSuperclass();
@@ -34,6 +35,10 @@ public class GenericTypeRemover extends AbstractProcessor<CtType<?>>
       }
       element.setFormalCtTypeParameters(new ArrayList<>());
     }
+  }
+
+  private boolean isCtTemplateParameter(CtType<?> element) {
+    return element.isSubtypeOf(getFactory().createCtTypeReference(TemplateParameter.class));
   }
 
   private boolean isSubtypeOfCtRHSReceiver(CtType<?> element) {
