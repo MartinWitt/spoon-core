@@ -7,6 +7,7 @@ import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.FileFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GenericTypeArgumentsFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
+import io.github.martinwitt.spoonrebuilder.fixes.GetAnnotationFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,13 +49,25 @@ public class App {
         methods.forEach(getActualClassProcessor::process);
         TemplateParameterProcessor templateParameterProcessor = new TemplateParameterProcessor();
         methods.forEach(templateParameterProcessor::process);
+        GetAnnotationFixer getAnnotationFixer = new GetAnnotationFixer();
+        methods.forEach(getAnnotationFixer::process);
         // Fixes:
-                model.getElements(new TypeFilter<>(CtAnnotation.class)).stream()
-                        .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
-        methods.stream().filter(v -> v.hasAnnotation(Override.class))
-        .forEach(v -> v.replace(v.clone()));
+        removeExperimentalAnnotation(model);
+        resetOverridePositions(methods);
         launcher.prettyprint();
         Path root = Path.of("spooned");
+        copyNonJavaFiles(root);
+        FileFixer fileFixer = new FileFixer(
+            new CastSniperFixer(model.getAllTypes())
+                .andThen(new VarArgsFixer())
+                .andThen(new GenericTypeArgumentsFixer())
+        );
+        try (Stream<Path> walk = Files.walk(Path.of("spooned"))) {
+            walk.forEach(fileFixer);
+        }
+    }
+
+    private static void copyNonJavaFiles(Path root) throws IOException {
         try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {
             walk.filter(v -> !v.toString().endsWith("java"))
             .filter(v -> !v.toString().contains(".git")).forEach(oldPath -> {
@@ -71,14 +84,16 @@ public class App {
                 }
             });
         }
-        FileFixer fileFixer = new FileFixer(
-            new CastSniperFixer(model.getAllTypes())
-                .andThen(new VarArgsFixer())
-                .andThen(new GenericTypeArgumentsFixer())
-        );
-        try (Stream<Path> walk = Files.walk(Path.of("spooned"))) {
-            walk.forEach(fileFixer);
-        }
+    }
+
+    private static void resetOverridePositions(List<CtMethod<?>> methods) {
+        methods.stream().filter(v -> v.hasAnnotation(Override.class))
+        .forEach(v -> v.replace(v.clone()));
+    }
+
+    private static void removeExperimentalAnnotation(CtModel model) {
+        model.getElements(new TypeFilter<>(CtAnnotation.class)).stream()
+                .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
     }
 
     private static Launcher createLauncher() {

@@ -3,7 +3,6 @@ package io.github.martinwitt.spoonrebuilder;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BiFunction;
-
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.cu.SourcePosition;
@@ -27,10 +26,7 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
 
   @Override
   public void process(CtTypeReference<?> reference) {
-    if(reference.getPackage() != null
-        && reference.getDeclaration() != null
-        && !reference.getActualTypeArguments().isEmpty()
-    ) {
+    if(hasGenericParameter(reference)) {
       CtType<?> type = reference.getDeclaration();
       if (!type.isParameterized()) {
         reference.setActualTypeArguments(new ArrayList<>());
@@ -64,8 +60,10 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
     }
   }
 
-  private boolean isSpoonType(CtTypeReference<?> element) {
-    return element.getQualifiedName().startsWith("spoon")||true;
+  private boolean hasGenericParameter(CtTypeReference<?> reference) {
+    return reference.getPackage() != null
+        && reference.getDeclaration() != null
+        && !reference.getActualTypeArguments().isEmpty();
   }
   
   /**
@@ -73,7 +71,7 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
   * forces it to be sniper-printed "as-is".
   */
   private static void markElementForSniperPrinting(CtElement element) {
-    if(element == null) {
+    if (element == null) {
       return;
     }
     SourcePosition pos = element.getPosition();
