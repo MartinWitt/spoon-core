@@ -5,12 +5,14 @@ import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class CastSniperFixer implements UnaryOperator<String> {
   private final Set<String> names;
-
+  private final Pattern ctLiteral = Pattern.compile("\\(\\(CtLiteral(<.+>)\\)\\)");
   /**
    * @param types
    */
@@ -29,6 +31,15 @@ public class CastSniperFixer implements UnaryOperator<String> {
     String content = s;
 
     for (String type : names) {
+      if (type.equals("CtLiteral")) {
+        Matcher matcher = ctLiteral.matcher(content);
+        if (matcher.find()) {
+          if (matcher.group(1) != null) {
+            content = matcher.replaceFirst("(" + type + matcher.group(1) + ")");
+          }
+        }
+        continue;
+      }
       content = content.replaceAll("\\(\\(" + type +"(?:<.*>)?"+ "\\)\\)",
           "(" + type + ")");
       content = content.replace("finalspoon", "final spoon");

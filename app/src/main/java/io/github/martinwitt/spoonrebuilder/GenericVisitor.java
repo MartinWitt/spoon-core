@@ -1,6 +1,8 @@
 package io.github.martinwitt.spoonrebuilder;
 
 import java.util.ArrayList;
+import java.util.List;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.cu.SourcePosition;
@@ -28,8 +30,10 @@ public class GenericVisitor extends CtScanner {
   }
 
   private void handleRef(CtTypeReference<?> clazzRef, CtType<?> clazz) {
-    if (clazz != null && !clazz.isParameterized() && !clazzRef.getActualTypeArguments().isEmpty() && isNotCtLiteral(clazz)) {
-      clazzRef.setActualTypeArguments(new ArrayList<>());
+    if (clazz != null && !clazz.isParameterized() && !clazzRef.getActualTypeArguments().isEmpty()
+        && isNotCtLiteral(clazz)) {
+      var list = new ArrayList<>(clazzRef.getActualTypeArguments());
+          list.forEach(clazzRef::removeActualTypeArgument);
       markElementForSniperPrinting(clazzRef);
 
     }
@@ -51,15 +55,23 @@ public class GenericVisitor extends CtScanner {
   @Override
   public <T> void visitCtNewClass(CtNewClass<T> newClass) {
     var ref = newClass.getType();
-    if (ref.getSimpleName().equals("AbstractFilter")) {
-      int a = 3;
-    }
     for (var typeArgument : ref.getActualTypeArguments()) {
       handleRef(typeArgument, typeArgument.getDeclaration());
     }
     markElementForSniperPrinting(newClass);
     newClass.replace(newClass.clone());
     super.visitCtNewClass(newClass);
+  }
+
+  @Override
+  public <T> void visitCtInvocation(CtInvocation<T> invocation) {
+    if (!invocation.getActualTypeArguments().isEmpty()) {
+      for (CtTypeReference<?> ref : invocation.getActualTypeArguments()) {
+        handleRef(ref, ref.getDeclaration());
+      }
+      markElementForSniperPrinting(invocation);
+    }
+    super.visitCtInvocation(invocation);
   }
 
   /**

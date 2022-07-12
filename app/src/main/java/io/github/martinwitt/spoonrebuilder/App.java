@@ -8,6 +8,7 @@ import io.github.martinwitt.spoonrebuilder.fixes.FileFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GenericTypeArgumentsFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GetActualClassProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.GetAnnotationFixer;
+import io.github.martinwitt.spoonrebuilder.fixes.MetaModelFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,6 +42,8 @@ public class App {
         model.getAllTypes().forEach(remover::process);
         GenericVisitor visitor = new GenericVisitor();
         model.getAllTypes().forEach(v -> v.accept(visitor));
+        // safety first KEKW
+        model.getAllTypes().forEach(v -> v.accept(visitor));
         GenericReferenceRemover genericReferenceRemover = new GenericReferenceRemover(remover);
         model.getElements(new TypeFilter<>(CtTypeReference.class))
                 .forEach(genericReferenceRemover::process);
@@ -51,6 +54,8 @@ public class App {
         methods.forEach(templateParameterProcessor::process);
         GetAnnotationFixer getAnnotationFixer = new GetAnnotationFixer();
         methods.forEach(getAnnotationFixer::process);
+        MetaModelFixer metaModelFixer = new MetaModelFixer();
+        model.getAllTypes().forEach(metaModelFixer::process);
         // Fixes:
         removeExperimentalAnnotation(model);
         resetOverridePositions(methods);
@@ -70,7 +75,7 @@ public class App {
     private static void copyNonJavaFiles(Path root) throws IOException {
         try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {
             walk.filter(v -> !v.toString().endsWith("java"))
-            .filter(v -> !v.toString().contains(".git")).forEach(oldPath -> {
+            .filter(v -> !(v.toString().contains(".git") || v.toString().contains(".class"))).forEach(oldPath -> {
                 try {
                     Path newLocation = root.resolve(oldPath);
                     if (Files.isDirectory(oldPath)) {
