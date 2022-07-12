@@ -32,14 +32,4 @@ public class CommitWalk {
       return null;
     }
   }
-
-  public void commitFilesToBranch() {
-    try {
-      git.add().addFilepattern(".").setUpdate(true).call();
-      git.checkout().setCreateBranch(true).setName("rebuild").call();
-      git.commit().setAuthor("SpoonRebuild", "empty").call();
-    } catch (GitAPIException e) {
-      e.printStackTrace();
-    }
-  }
 }
