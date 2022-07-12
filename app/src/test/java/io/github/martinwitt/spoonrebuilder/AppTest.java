@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 
 class AppTest {
@@ -20,25 +18,15 @@ class AppTest {
         Path spoonPath = Path.of("spoon");
         Path spoonRebuild = Path.of("./spoon-rebuild");
         Path rebuildSpoonRebuildPath = Path.of("./spoon-rebuild", "spoon");
-
-        // CommitWalk commitWalk =
-        //         new CommitWalk("https://github.com/INRIA/spoon", spoonPath);
-        // commitWalk.checkoutNextCommit();
-        // SpoonRebuilder rebuilder = new SpoonRebuilder(
-        //         spoonPath, spoonRebuild);
-        // rebuilder.rebuild();
-        // Files.walk(spoonPath).sorted(Comparator.reverseOrder()).map(Path::toFile)
-        //         .forEach(File::delete);
-        // ResultChecker resultChecker = new ResultChecker(rebuildSpoonRebuildPath);
-        // resultChecker.check();
-        try {
-            Git git = Git.init().setDirectory(rebuildSpoonRebuildPath.toFile()).call();
-            git.add().addFilepattern(".").call();
-            git.commit().setAuthor("SpoonRebuild", "empty").setMessage("remove generics").setSign(false).call();
-            git.push().setRemote("https://github.com/MartinWitt/spoon-rebuilder/").call();
-        } catch (IllegalStateException | GitAPIException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        CommitWalk commitWalk =
+                new CommitWalk("https://github.com/INRIA/spoon", spoonPath);
+        commitWalk.checkoutNextCommit();
+        SpoonRebuilder rebuilder = new SpoonRebuilder(
+                spoonPath, spoonRebuild);
+        rebuilder.rebuild();
+        Files.walk(spoonPath).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                .forEach(File::delete);
+        ResultChecker resultChecker = new ResultChecker(rebuildSpoonRebuildPath);
+        resultChecker.check();
     }
 }

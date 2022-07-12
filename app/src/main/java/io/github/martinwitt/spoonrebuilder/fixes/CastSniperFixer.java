@@ -40,6 +40,8 @@ public class CastSniperFixer implements UnaryOperator<String> {
         }
         continue;
       }
+      content = content.replaceAll("abstract static class OnAccessListener",
+          "static class OnAccessListener");
       content = content.replaceAll("\\(\\(" + type +"(?:<.*>)?"+ "\\)\\)",
           "(" + type + ")");
       content = content.replace("finalspoon", "final spoon");
