@@ -3,6 +3,13 @@
  */
 package io.github.martinwitt.spoonrebuilder;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Stream;
 import io.github.martinwitt.spoonrebuilder.fixes.CastSniperFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.FileFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.GenericTypeArgumentsFixer;
@@ -11,10 +18,8 @@ import io.github.martinwitt.spoonrebuilder.fixes.GetAnnotationFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.MetaModelFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
-import org.apache.commons.lang3.tuple.Pair;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
-import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
@@ -22,19 +27,17 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.sniper.SniperJavaPrettyPrinter;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+public class SpoonRebuilder {
 
-public class App {
+    private Path spoonFolderPath;
+    private Path outputPath;
 
-    public static void main(String[] args) throws IOException {
+    public SpoonRebuilder(Path spoonFolderPath, Path outputPath) {
+        this.spoonFolderPath = spoonFolderPath;
+        this.outputPath = outputPath;
+    }
+
+    public void rebuild() throws IOException {
         Launcher launcher = createLauncher();
         CtModel model = launcher.buildModel();
         GenericTypeRemover remover = new GenericTypeRemover();
@@ -60,20 +63,21 @@ public class App {
         removeExperimentalAnnotation(model);
         resetOverridePositions(methods);
         launcher.prettyprint();
-        Path root = Path.of("spooned");
+        Path root = outputPath;
         copyNonJavaFiles(root);
         FileFixer fileFixer = new FileFixer(
             new CastSniperFixer(model.getAllTypes())
                 .andThen(new VarArgsFixer())
                 .andThen(new GenericTypeArgumentsFixer())
         );
-        try (Stream<Path> walk = Files.walk(Path.of("spooned"))) {
+        try (Stream<Path> walk = Files.walk(outputPath)) {
             walk.forEach(fileFixer);
         }
+        
     }
 
-    private static void copyNonJavaFiles(Path root) throws IOException {
-        try (Stream<Path> walk = Files.walk(Path.of("spoon"))) {
+    private void copyNonJavaFiles(Path root) throws IOException {
+        try (Stream<Path> walk = Files.walk(spoonFolderPath)) {
             walk.filter(v -> !v.toString().endsWith("java"))
             .filter(v -> !(v.toString().contains(".git") || v.toString().contains(".class"))).forEach(oldPath -> {
                 try {
@@ -101,41 +105,16 @@ public class App {
                 .filter(v -> v.getName().equals("Experimental")).forEach(CtElement::delete);
     }
 
-    private static Launcher createLauncher() {
+    private Launcher createLauncher() {
         Launcher launcher = new Launcher();
-        launcher.addInputResource("spoon/src/main");
+        launcher.addInputResource(
+                Path.of(spoonFolderPath.toString(), "src", "main", "java").toString());
+        launcher.setSourceOutputDirectory(
+                Path.of(outputPath.toString(), "spoon", "src", "main", "java").toString());
         launcher.getEnvironment().setEncoding(StandardCharsets.UTF_8);
-        launcher.getEnvironment().setSourceOutputDirectory(new File("spooned/spoon/src/main/java"));
         launcher.getEnvironment().setAutoImports(true);
         launcher.getEnvironment().setPrettyPrinterCreator(
                 () -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
         return launcher;
-    }
-
-    private static BracketFileFixer createBracketFileFixerAbstractTypingContext() {
-        return new BracketFileFixer("AbstractTypingContext", List.of(
-                Pair.of(Pattern.quote("((CtTypeParameterReference))"),
-                        "(CtTypeParameterReference)"),
-                Pair.of(Pattern.quote("((CtWildcardReference))"), "(CtWildcardReference)")));
-    }
-    
-    private static BracketFileFixer createBracketFileFixerClassTypingContext() {
-        return new BracketFileFixer("ClassTypingContext", List.of(
-                Pair.of(Pattern.quote("((CtTypeParameterReference))"),
-                        "(CtTypeParameterReference)"),
-                Pair.of(Pattern.quote("((CtWildcardReference))"), "(CtWildcardReference)")));
-    }
-    
-    /**
-    * Modify an element such that the sniper printer detects it as modified, without changing its final content. This
-    * forces it to be sniper-printed "as-is".
-    */
-    private static void markElementForSniperPrinting(CtElement element) {
-        if (element == null) {
-            return;
-        }
-        SourcePosition pos = element.getPosition();
-        element.setPosition(SourcePosition.NOPOSITION);
-        element.setPosition(pos);
     }
 }

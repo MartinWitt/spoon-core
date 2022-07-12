@@ -3,44 +3,29 @@
  */
 package io.github.martinwitt.spoonrebuilder;
 
-import java.util.Iterator;
-import java.util.Optional;
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import org.junit.jupiter.api.Test;
-import spoon.Launcher;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.visitor.filter.TypeFilter;
-import spoon.support.compiler.VirtualFile;
 
 class AppTest {
 
     
     @Test
-    void foo() {
-        String code = """
-                    import java.util.List;
-                    import java.util.Set
-                class Bar {
-
-                }
-                abstract class Foo {
-                    abstract <C extends Set<Bar<?>>> C setConstructors(Set<Bar<?>> constructors);
-                }
-                """;
-        Launcher launcher = new Launcher();
-        launcher.addInputResource(new VirtualFile(code));
-        // launcher.addProcessor(new GenericReferenceRemover());
-        launcher.buildModel();
-        Iterator<CtType<?>> iterator = launcher.getModel().getAllTypes().iterator();
-        var foo = iterator.next();
-        var bar = iterator.next();
-        GenericReferenceRemover referenceRemover = new GenericReferenceRemover((__, ___) -> Optional.empty());
-        referenceRemover.setFactory(launcher.getFactory());
-        launcher.getModel().getElements(new TypeFilter<>(CtTypeReference.class))
-                .forEach(referenceRemover::process);
-        String s = foo.toString();
-        String c = bar.toString();
-        int a = 3;
+    void rebuildTest() throws IOException {
+        Path spoonPath = Path.of("spoon");
+        CommitWalk commitWalk =
+                new CommitWalk("https://github.com/INRIA/spoon", spoonPath);
+        commitWalk.checkoutNextCommit();
+        SpoonRebuilder rebuilder = new SpoonRebuilder(
+                spoonPath, Path.of("./spoon-rebuilt"));
+        rebuilder.rebuild();
+        Files.walk(spoonPath).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                .forEach(File::delete);
+        ResultChecker resultChecker = new ResultChecker(Path.of("./spoon-rebuilt","spoon"));
+        resultChecker.check();
+        
     }
 }
