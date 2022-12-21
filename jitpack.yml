@@ -1,4 +1,4 @@
 jdk:
   - openjdk11
 install:
-  - cd spoon && mvn install -DskipDepClean=true -Dcheckstyle.skip
+  - mvn install -DskipDepClean=true -Dcheckstyle.skip
