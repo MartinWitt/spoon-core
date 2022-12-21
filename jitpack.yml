@@ -3,4 +3,4 @@ jdk:
 install:
   - mvn install -DskipDepClean=true -Dcheckstyle.skip
 env:
-  - ARTIFACT: "spoon-core"
+    ARTIFACT: "spoon-core"
