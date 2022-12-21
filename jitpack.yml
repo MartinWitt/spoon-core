@@ -2,3 +2,5 @@ jdk:
   - openjdk11
 install:
   - mvn install -DskipDepClean=true -Dcheckstyle.skip
+env:
+  - ARTIFACT: "spoon-core"
