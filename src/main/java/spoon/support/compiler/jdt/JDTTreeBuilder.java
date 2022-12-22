@@ -233,8 +233,8 @@ public class JDTTreeBuilder extends ASTVisitor {
 	}
 
 	
-	abstract// an abstract class here is better because the method is actually package-protected, as the type, (and not public as in the case of interface methods in Java)
-	static class OnAccessListener {
+	// an abstract class here is better because the method is actually package-protected, as the type, (and not public as in the case of interface methods in Java)
+	abstract static class OnAccessListener {
 		abstract boolean onAccess(char[][] tokens, int index);
 	}
 
