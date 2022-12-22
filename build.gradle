@@ -70,6 +70,9 @@ publishing {
 	}
 	publications {
 		gpr(MavenPublication) {
+			groupId = 'io.github.martinwitt'
+			artifactId = 'spoon-rebuilder'
+			version = '0.0.1'
 			from(components.java)
 		}
 	}
