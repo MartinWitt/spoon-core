@@ -30,6 +30,6 @@ jobs:
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: martinwitt/spoon-core
+      - uses: martinwitt/spoon-core@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
