@@ -14,7 +14,7 @@
         "fix"
       ],
       "automerge": true,
-      "semanticCommitType": ":arrow_up:",
+      "semanticCommitType": ":arrow_up:"
     },
     {
       "updateTypes": [
@@ -36,5 +36,5 @@
       ],
       "semanticCommitType": ":bookmark:"
     }
-  ],
+  ]
 }
