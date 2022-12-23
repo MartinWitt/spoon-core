@@ -111,20 +111,14 @@ public class GitHubAction {
                 .call();
         // create a tag with the current date
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("martinWitt", githubToken);
-        git.tagList().call().stream()
-                .filter(tag -> tag.getName().equals(LocalDate.now().toString()))
-                .findAny()
-                .ifPresent(tag -> {
-                    try {
-                        git.tagDelete().setTags(tag.getName()).call();
-                    } catch (GitAPIException e) {
-                        e.printStackTrace();
-                    }
-                });
-        git.tag()
-                .setName(LocalDate.now().toString())
-                .setCredentialsProvider(credentialsProvider)
-                .call();
+        if (git.tagList().call().stream()
+                .noneMatch(tag -> tag.getName().equals(LocalDate.now().toString()))) {
+            git.tag()
+                    .setName(LocalDate.now().toString())
+                    .setCredentialsProvider(credentialsProvider)
+                    .call();
+        }
+
         // push the changes to the upstream repository
         git.push()
                 .setRemote(upstreamRepo)
