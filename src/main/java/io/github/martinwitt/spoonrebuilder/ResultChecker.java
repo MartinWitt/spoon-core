@@ -25,7 +25,7 @@ public class ResultChecker {
                         .start();
             } else {
                 process = processBuilder
-                        .command("sh", "mvn", "clean", "package", "-DskipDepClean=true")
+                        .command("mvn", "clean", "package", "-DskipDepClean=true")
                         .directory(resultFolderPath.toFile())
                         .inheritIO()
                         .start();
