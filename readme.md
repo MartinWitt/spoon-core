@@ -7,4 +7,4 @@ This is a simple tool to rebuild the Spoon repository without generics.
 ### Gradle
 ### Maven
 ## License
-## SniperPrinting Fixes 
+## SniperPrinting Fixes

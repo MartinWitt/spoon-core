@@ -9,13 +9,14 @@ public class GitHubUtilsTest {
         var set = GitHubUtils.getTagsOfRepo("https://github.com/martinwitt/spoon-core").stream()
                 .map(this::getCommitHashOfTag)
                 .toList();
-        var list = GitHubUtils.getCommitsOfRepo("https://github.com/INRIA/spoon", 20);
-
-        // for (RevCommit revCommit : list) {
-        //   System.out.println(revCommit.getName());
-        // }
-        var newCommits = list.stream().filter(v -> !set.contains(v.getName())).toList();
-        newCommits.forEach(System.out::println);
+        set.forEach(System.out::println);
+        // var list = GitHubUtils.getCommitsOfRepo("https://github.com/INRIA/spoon", 20);
+        //
+        // // for (RevCommit revCommit : list) {
+        // //   System.out.println(revCommit.getName());
+        // // }
+        // var newCommits = list.stream().filter(v -> !set.contains(v.getName())).toList();
+        // newCommits.forEach(System.out::println);
     }
 
     private String getCommitHashOfTag(Ref revCommit) {

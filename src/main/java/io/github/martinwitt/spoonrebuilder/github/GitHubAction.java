@@ -11,6 +11,7 @@ import io.quarkus.logging.Log;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +55,14 @@ public class GitHubAction {
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
         var commits = GitHubUtils.getNewCommitsForSpoon();
+        commands.jobSummary(
+                """
+                # Rebuild Spoon
+                -------------
+                ## New Commits
+                %s
+            """
+                        .formatted(commits.stream().map(RevCommit::getName).collect(Collectors.joining("\n"))));
         if (commits.isEmpty()) {
             commands.notice("No new commits found");
             return;
@@ -90,10 +99,13 @@ public class GitHubAction {
     private void checkBuildResult(Path outputPath, Commands commands, RevCommit commit) {
         try {
             commands.notice("Checking build result");
+            commands.group("Maven build");
             new ResultChecker(outputPath).check();
+            commands.endGroup();
             commands.notice("Build result is correct");
             pushResult(outputPath, commands, commit);
         } catch (Exception e) {
+            commands.endGroup();
             commands.error("Error while checking build result" + e);
             Log.error("Error while checking build result", e);
         }
@@ -118,13 +130,10 @@ public class GitHubAction {
                 .call();
         // create a tag with the current date
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("martinWitt", githubToken);
-        if (git.tagList().call().stream().noneMatch(tag -> tag.getName().equals(commit.getName()))) {
-            git.tag()
-                    .setName(commit.getName())
-                    .setCredentialsProvider(credentialsProvider)
-                    .call();
-        }
-
+        git.tag()
+                .setName(commit.getName())
+                .setCredentialsProvider(credentialsProvider)
+                .call();
         // push the changes to the upstream repository
         git.push()
                 .setRemote(upstreamRepo)
@@ -133,5 +142,6 @@ public class GitHubAction {
                 .call();
         git.close();
         FileUtils.deleteDirectory(gitFolder);
+        commands.appendJobSummary("Rebuild Spoon " + commit.getName() + " was pushed to GitHub\n");
     }
 }
