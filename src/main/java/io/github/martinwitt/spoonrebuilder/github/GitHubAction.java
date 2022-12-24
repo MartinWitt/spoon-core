@@ -55,7 +55,7 @@ public class GitHubAction {
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
         var commits = GitHubUtils.getNewCommitsForSpoon();
-        commands.jobSummary(
+        commands.appendJobSummary(
                 """
                 # Rebuild Spoon
                 -------------
