@@ -131,5 +131,7 @@ public class GitHubAction {
                 .setCredentialsProvider(credentialsProvider)
                 .setPushTags()
                 .call();
+        git.close();
+        FileUtils.deleteDirectory(gitFolder);
     }
 }
