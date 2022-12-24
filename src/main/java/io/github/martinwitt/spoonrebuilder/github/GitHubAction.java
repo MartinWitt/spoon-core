@@ -11,12 +11,12 @@ import io.quarkus.logging.Log;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -53,19 +53,26 @@ public class GitHubAction {
         commands.notice("Rebuild Spoon");
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
-        refactorRepo(gitFolderForSpoon, commands);
+        var commits = GitHubUtils.getNewCommitsForSpoon();
+        if (commits.isEmpty()) {
+            commands.notice("No new commits found");
+            return;
+        }
+        for (RevCommit revCommit : commits) {
+            refactorRepo(gitFolderForSpoon, commands, revCommit);
+        }
     }
 
-    void refactorRepo(Path gitFolderForSpoon, Commands commands) {
+    void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
         try {
-            RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon);
+            RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon, revCommit);
             Path outputPath = Path.of(outputFolder);
             SpoonRebuilder spoonRebuilder = new SpoonRebuilder(gitFolderForSpoon, outputPath);
             spoonRebuilder.rebuild();
             repo.close();
             FileUtils.deleteDirectory(gitFolderForSpoon.toFile());
             // Check the build result and push it to the server
-            checkBuildResult(outputPath, commands);
+            checkBuildResult(outputPath, commands, revCommit);
         } catch (Exception e) {
             commands.error("Error while rebuilding Spoon");
             commands.error(e.getMessage());
@@ -80,19 +87,19 @@ public class GitHubAction {
      * @param outputPath The path of the output.
      * @param commands
      */
-    private void checkBuildResult(Path outputPath, Commands commands) {
+    private void checkBuildResult(Path outputPath, Commands commands, RevCommit commit) {
         try {
             commands.notice("Checking build result");
             new ResultChecker(outputPath).check();
             commands.notice("Build result is correct");
-            pushResult(outputPath, commands);
+            pushResult(outputPath, commands, commit);
         } catch (Exception e) {
             commands.error("Error while checking build result" + e);
             Log.error("Error while checking build result", e);
         }
     }
 
-    private void pushResult(Path outputPath, Commands commands) throws GitAPIException, IOException {
+    private void pushResult(Path outputPath, Commands commands, RevCommit commit) throws GitAPIException, IOException {
         commands.notice("Pushing result to GitHub");
         File gitFolder = new File("./spoon-merged");
         // clone the upstream repository and checkout the upstream branch
@@ -106,15 +113,14 @@ public class GitHubAction {
         FileUtils.copyDirectory(outputPath.toFile(), gitFolder);
         git.add().addFilepattern(".").call();
         git.commit()
-                .setMessage("Rebuild Spoon " + LocalDate.now().toString())
+                .setMessage("Rebuild Spoon " + commit.getName())
                 .setSign(false)
                 .call();
         // create a tag with the current date
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("martinWitt", githubToken);
-        if (git.tagList().call().stream()
-                .noneMatch(tag -> tag.getName().equals(LocalDate.now().toString()))) {
+        if (git.tagList().call().stream().noneMatch(tag -> tag.getName().equals(commit.getName()))) {
             git.tag()
-                    .setName(LocalDate.now().toString())
+                    .setName(commit.getName())
                     .setCredentialsProvider(credentialsProvider)
                     .call();
         }
