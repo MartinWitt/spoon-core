@@ -13,9 +13,9 @@ repositories {
 
 dependencies {
 	// Use JUnit Jupiter for testing.
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 
-	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0-beta-11'
+	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0'
 	implementation 'org.apache.maven:maven-embedder:3.8.6'
 	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
 	// implementation 'io.quarkiverse.jgit:quarkus-jgit:2.3.0'
