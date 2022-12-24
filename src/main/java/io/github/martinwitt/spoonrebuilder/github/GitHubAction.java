@@ -55,7 +55,7 @@ public class GitHubAction {
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
         var commits = GitHubUtils.getNewCommitsForSpoon();
-        commands.appendJobSummary(
+        commands.notice(
                 """
                 # Rebuild Spoon
                 -------------
@@ -142,6 +142,6 @@ public class GitHubAction {
                 .call();
         git.close();
         FileUtils.deleteDirectory(gitFolder);
-        commands.appendJobSummary("Rebuild Spoon " + commit.getName() + " was pushed to GitHub\n");
+        commands.notice("Rebuild Spoon " + commit.getName() + " was pushed to GitHub\n");
     }
 }
