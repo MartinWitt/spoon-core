@@ -1,4 +1,4 @@
-package io.github.martinwitt.spoonrebuilder;
+package io.github.martinwitt.spoonrebuilder.generics;
 
 import java.util.ArrayList;
 import java.util.HashMap;

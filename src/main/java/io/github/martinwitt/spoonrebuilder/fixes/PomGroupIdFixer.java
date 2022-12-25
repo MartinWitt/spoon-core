@@ -1,27 +1,35 @@
 package io.github.martinwitt.spoonrebuilder.fixes;
 
-import io.quarkus.logging.Log;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PomGroupIdFixer {
 
+    private static final Logger logger =
+            LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
     private static final String ARTIFACT_ID_SPOON_CORE = "<artifactId>spoon-core</artifactId>";
-    private final String groupId = "<groupId>com.github.martinwitt</groupId>";
+    private static final String GROUP_ID = "<groupId>com.github.martinwitt</groupId>";
 
     public void fixPom(List<Path> files) {
-        files.stream().filter(f -> f.getFileName().toString().equals("pom.xml")).forEach(f -> {
+        files.stream().filter(this::isPom).forEach(f -> {
             try {
                 String content = Files.readString(f);
-                content = content.replace(ARTIFACT_ID_SPOON_CORE, groupId + "\n" + ARTIFACT_ID_SPOON_CORE);
-
+                content = content.replace(ARTIFACT_ID_SPOON_CORE, GROUP_ID + "\n" + ARTIFACT_ID_SPOON_CORE);
                 Files.write(f, content.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                Log.error("Error while fixing pom.xml", e);
+                logger.atError().withThrowable(e).log("Error while fixing pom.xml");
             }
         });
+    }
+
+    private boolean isPom(Path f) {
+        return f.getFileName().toString().equals("pom.xml");
     }
 }

@@ -1,19 +1,24 @@
 package io.github.martinwitt.spoonrebuilder.github;
 
-import io.quarkus.logging.Log;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.StreamSupport;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public class GitHubUtils {
+
+    private static final Logger logger =
+            LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     private GitHubUtils() {}
 
@@ -33,7 +38,7 @@ public class GitHubUtils {
         try {
             return Git.lsRemoteRepository().setTags(true).setRemote(repoUrl).call();
         } catch (GitAPIException e) {
-            Log.error(e);
+            logger.atError().withThrowable(e).log("Error while getting tags of repo");
         }
         return List.of();
     }
@@ -50,7 +55,7 @@ public class GitHubUtils {
                     .limit(limit)
                     .toList();
         } catch (GitAPIException | IOException e) {
-            Log.error(e);
+            logger.atError().withThrowable(e).log("Error while getting commits of repo");
         }
         return List.of();
     }
@@ -59,7 +64,11 @@ public class GitHubUtils {
         var tags = GitHubUtils.getTagsOfRepo(MARTINWITT_SPOON).stream()
                 .map(GitHubUtils::getCommitHashOfTag)
                 .toList();
+        logger.atInfo().log("Found " + tags.size() + " tags");
+        tags.forEach(logger::info);
         var commits = GitHubUtils.getCommitsOfRepo(INRIA_SPOON, NEW_COMMIT_LIMIT);
+        logger.atInfo().log("Found " + commits.size() + " commits");
+        commits.stream().filter(v -> !tags.contains(v.getName())).toList().forEach(logger::info);
         return commits.stream().filter(v -> !tags.contains(v.getName())).toList();
     }
 

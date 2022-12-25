@@ -16,7 +16,7 @@ public class GetAnnotationFixer extends AbstractProcessor<CtMethod<?>> {
                 && element.getDeclaringType().getSimpleName().equals("CtElementImpl")
                 && hasClassParameter(element)) {
             element.getElements(new TypeFilter<>(CtReturn.class)).stream()
-                    .map(v -> v.getReturnedExpression())
+                    .map(CtReturn::getReturnedExpression)
                     .filter(v -> !v.toString().contains("null"))
                     .forEach(v -> {
                         List<CtTypeReference<?>> arrayList = new ArrayList<>();

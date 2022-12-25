@@ -32,14 +32,12 @@ public class CastSniperFixer implements UnaryOperator<String> {
         for (String type : names) {
             if (type.equals("CtLiteral")) {
                 Matcher matcher = ctLiteral.matcher(content);
-                if (matcher.find()) {
-                    if (matcher.group(1) != null) {
-                        content = matcher.replaceFirst("(" + type + matcher.group(1) + ")");
-                    }
+                if (matcher.find() && matcher.group(1) != null) {
+                    content = matcher.replaceFirst("(" + type + matcher.group(1) + ")");
                 }
                 continue;
             }
-            content = content.replaceAll("abstract// an abstract class", "// an abstract class");
+            content = content.replace("abstract// an abstract class", "// an abstract class");
             content = content.replaceAll("\\(\\(" + type + "(?:<.*>)?" + "\\)\\)", "(" + type + ")");
             content = content.replace("finalspoon", "final spoon");
             content = content.replace("abstractclass", "abstract class");

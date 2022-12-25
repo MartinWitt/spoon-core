@@ -11,7 +11,7 @@ public record FileFixer(Function<String, String> function) implements Consumer<P
 
     @Override
     public void accept(Path path) {
-        if (!Files.isDirectory(path) && path.getFileName().toString().endsWith("java")) {
+        if (!Files.isDirectory(path) && isJavaFile(path)) {
             try {
                 String content = Files.readString(path);
                 Files.writeString(path, function.apply(content), StandardOpenOption.TRUNCATE_EXISTING);
@@ -19,5 +19,9 @@ public record FileFixer(Function<String, String> function) implements Consumer<P
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean isJavaFile(Path path) {
+        return path.getFileName().toString().endsWith("java");
     }
 }

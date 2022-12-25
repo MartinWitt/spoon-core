@@ -33,4 +33,13 @@ public class RepoCheckout {
     public void close() {
         git.close();
     }
+
+    public RevCommit getCurrentCommit() {
+        try {
+            return git.log().call().iterator().next();
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

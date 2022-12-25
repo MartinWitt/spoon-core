@@ -12,7 +12,11 @@ import io.github.martinwitt.spoonrebuilder.fixes.MetaModelFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.PomGroupIdFixer;
 import io.github.martinwitt.spoonrebuilder.fixes.TemplateParameterProcessor;
 import io.github.martinwitt.spoonrebuilder.fixes.VarArgsFixer;
+import io.github.martinwitt.spoonrebuilder.generics.GenericReferenceRemover;
+import io.github.martinwitt.spoonrebuilder.generics.GenericTypeRemover;
+import io.github.martinwitt.spoonrebuilder.generics.GenericVisitor;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +24,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtAnnotation;
@@ -31,6 +37,8 @@ import spoon.support.sniper.SniperJavaPrettyPrinter;
 
 public class SpoonRebuilder {
 
+    private static final Logger logger =
+            LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private Path spoonFolderPath;
     private Path outputPath;
 
@@ -62,7 +70,9 @@ public class SpoonRebuilder {
         try (Stream<Path> walk = Files.walk(outputPath)) {
             walk.forEach(fileFixer);
         }
-        pomGroupIdFixer.fixPom(Arrays.asList(Files.list(outputPath).toArray(Path[]::new)));
+        try (Stream<Path> paths = Files.list(outputPath)) {
+            pomGroupIdFixer.fixPom(Arrays.asList(paths.toArray(Path[]::new)));
+        }
     }
 
     private List<CtMethod<?>> removeGenerics(CtModel model) {
@@ -90,19 +100,20 @@ public class SpoonRebuilder {
         try (Stream<Path> walk = Files.walk(spoonFolderPath)) {
             walk.filter(v -> !v.toString().endsWith("java"))
                     .filter(v -> !(v.toString().contains(".git") || v.toString().contains(".class")))
-                    .forEach(oldPath -> {
-                        try {
-                            Path newLocation = root.resolve(spoonFolderPath.relativize(oldPath));
-                            if (Files.isDirectory(oldPath)) {
-                                Files.createDirectories(newLocation);
-                            } else {
-                                Files.copy(oldPath, newLocation, StandardCopyOption.REPLACE_EXISTING);
-                            }
-                        } catch (Exception e) {
-                            System.out.println(oldPath.toString() + " can't be written to "
-                                    + Path.of("spooned", oldPath.toString()));
-                        }
-                    });
+                    .forEach(oldPath -> copyFileToNewLocation(root, oldPath));
+        }
+    }
+
+    private void copyFileToNewLocation(Path root, Path oldPath) {
+        try {
+            Path newLocation = root.resolve(spoonFolderPath.relativize(oldPath));
+            if (Files.isDirectory(oldPath)) {
+                Files.createDirectories(newLocation);
+            } else {
+                Files.copy(oldPath, newLocation, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            logger.atError().withThrowable(e).log("Error copying file {}", oldPath);
         }
     }
 

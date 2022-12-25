@@ -4,26 +4,34 @@ import io.github.martinwitt.spoonrebuilder.ResultChecker;
 import io.github.martinwitt.spoonrebuilder.SpoonRebuilder;
 import io.quarkiverse.githubaction.Action;
 import io.quarkiverse.githubaction.Commands;
-import io.quarkiverse.githubaction.Context;
 import io.quarkiverse.githubaction.Inputs;
-import io.quarkiverse.githubaction.Outputs;
-import io.quarkus.logging.Log;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
 
 @ApplicationScoped
 public class GitHubAction {
+
+    private static final Logger logger =
+            LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     @Inject
     @ConfigProperty(name = "rebuilder.repoUrl")
@@ -50,7 +58,7 @@ public class GitHubAction {
     private static final String TEMP_PATH_SPOON = "./spoon_git";
 
     @Action
-    public void rebuildSpoon(Inputs inputs, Outputs outputs, Context context, Commands commands) {
+    public void rebuildSpoon(Inputs inputs, Commands commands) {
         commands.notice("Rebuild Spoon");
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
@@ -72,9 +80,10 @@ public class GitHubAction {
         }
     }
 
-    void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
+    public void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
         try {
             RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon, revCommit);
+            commands.notice("Repo on commit " + repo.getCurrentCommit().getName());
             Path outputPath = Path.of(outputFolder);
             SpoonRebuilder spoonRebuilder = new SpoonRebuilder(gitFolderForSpoon, outputPath);
             spoonRebuilder.rebuild();
@@ -85,7 +94,7 @@ public class GitHubAction {
         } catch (Exception e) {
             commands.error("Error while rebuilding Spoon");
             commands.error(e.getMessage());
-            Log.error("Error while rebuilding Spoon", e);
+            logger.atInfo().withThrowable(e).log("Error while rebuilding Spoon");
         }
     }
 
@@ -100,48 +109,90 @@ public class GitHubAction {
         try {
             commands.notice("Checking build result");
             commands.group("Maven build");
-            new ResultChecker(outputPath).check();
+            new ResultChecker(outputPath).checkBuildResult();
             commands.endGroup();
             commands.notice("Build result is correct");
-            pushResult(outputPath, commands, commit);
+            pushResultToGitHub(outputPath, commands, commit);
         } catch (Exception e) {
             commands.endGroup();
             commands.error("Error while checking build result" + e);
-            Log.error("Error while checking build result", e);
+            logger.atError().withThrowable(e).log("Error while checking build result");
+            e.printStackTrace();
         }
     }
 
-    private void pushResult(Path outputPath, Commands commands, RevCommit commit) throws GitAPIException, IOException {
+    private void pushResultToGitHub(Path outputPath, Commands commands, RevCommit commit)
+            throws GitAPIException, IOException {
         commands.notice("Pushing result to GitHub");
-        File gitFolder = new File("./spoon-merged");
+        File gitMergeFolder = new File("./spoon-merged");
+        try (Closeable c = () -> FileUtils.deleteDirectory(gitMergeFolder);
+                Closeable output = () -> FileUtils.deleteDirectory(outputPath.toFile())) {
+            Git git = mergeResult(outputPath, gitMergeFolder);
+            createCommit(commit, git);
+            // create a tag with the current date
+            CredentialsProvider credentialsProvider =
+                    new UsernamePasswordCredentialsProvider("martinWitt", githubToken);
+            createTag(commit, git, credentialsProvider);
+            // push the changes to the upstream repository
+            gitPushResults(commands, git, credentialsProvider);
+            createRelease(commit);
+            git.close();
+            commands.notice("Commit " + commit.getName() + " was pushed to GitHub and a release created\n");
+        }
+    }
+
+    private void gitPushResults(Commands commands, Git git, CredentialsProvider credentialsProvider)
+            throws GitAPIException {
+        git.push()
+                .setCredentialsProvider(credentialsProvider)
+                .setPushTags()
+                .call()
+                .forEach(v -> commands.notice(v.getMessages()));
+    }
+
+    private void createCommit(RevCommit commit, Git git) throws GitAPIException {
+        git.commit()
+                .setMessage("Rebuild Spoon: " + commit.getName())
+                .setSign(false)
+                .call();
+    }
+
+    private Git mergeResult(Path outputPath, File gitMergeFolder) throws GitAPIException, IOException {
         // clone the upstream repository and checkout the upstream branch
         Git git = Git.cloneRepository()
                 .setURI(upstreamRepo)
                 .setBranch(upstreamBranch)
-                .setDirectory(gitFolder)
+                .setDirectory(gitMergeFolder)
                 .call();
-        git.checkout().setName("rebuild").call();
         // copy the output of the spoon model to the git repository
-        FileUtils.copyDirectory(outputPath.toFile(), gitFolder);
+        FileUtils.copyDirectory(outputPath.toFile(), gitMergeFolder);
         git.add().addFilepattern(".").call();
-        git.commit()
-                .setMessage("Rebuild Spoon " + commit.getName())
-                .setSign(false)
-                .call();
-        // create a tag with the current date
-        CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("martinWitt", githubToken);
+        return git;
+    }
+
+    private void createTag(RevCommit commit, Git git, CredentialsProvider credentialsProvider) throws GitAPIException {
         git.tag()
-                .setName(commit.getName())
+                .setName("commit-" + commit.getName())
+                .setMessage("Rebuild Spoon for commit hash: " + commit.getName())
                 .setCredentialsProvider(credentialsProvider)
                 .call();
-        // push the changes to the upstream repository
-        git.push()
-                .setRemote(upstreamRepo)
-                .setCredentialsProvider(credentialsProvider)
-                .setPushTags()
-                .call();
-        git.close();
-        FileUtils.deleteDirectory(gitFolder);
-        commands.notice("Rebuild Spoon " + commit.getName() + " was pushed to GitHub\n");
+    }
+
+    private void createRelease(RevCommit commit) throws IOException {
+        GHRepository repo = GitHub.connect("martinWitt", githubToken).getRepository("martinwitt/spoon-core");
+        repo.createRelease("commit-" + commit.getName())
+                .body(
+                        """
+                       Rebuild Spoon for commit hash:  %s
+                       Rebuilder hash: %s
+                       Date: %s
+                       Time: %s
+                       """
+                                .formatted(
+                                        commit.getName(),
+                                        repo.getBranch("master").getSHA1(),
+                                        LocalDate.now(),
+                                        LocalTime.now()))
+                .create();
     }
 }

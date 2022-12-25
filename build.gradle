@@ -24,12 +24,9 @@ dependencies {
 	implementation(enforcedPlatform('io.quarkus:quarkus-bom:2.15.1.Final'))
 	implementation 'io.quarkiverse.githubaction:quarkus-github-action:0.9.2'
 	implementation 'io.quarkus:quarkus-junit5'
+	implementation("org.jboss.logmanager:log4j2-jboss-logmanager")
 }
 
-application {
-	// Define the main class for the application.
-	mainClass = 'io.github.martinwitt.spoonrebuilder.App'
-}
 
 tasks.named('test') {
 	// Use JUnit Platform for unit tests.
@@ -72,7 +69,7 @@ publishing {
 		gpr(MavenPublication) {
 			groupId = 'io.github.martinwitt'
 			artifactId = 'spoon-rebuilder'
-			version = '0.0.1'
+			version = '0.0.2'
 			from(components.java)
 		}
 	}
