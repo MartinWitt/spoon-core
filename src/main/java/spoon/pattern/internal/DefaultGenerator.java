@@ -94,10 +94,9 @@ public class DefaultGenerator implements Generator {
 						if (result.getRequiredClass().isInstance(code)) {
 							return (T) code;
 						}
-						/*
-						 * else the simplified code is not matching with required type. For example
-						 * statement String.class.getName() was converted to expression
-						 * "java.lang.String"
+						/* else the simplified code is not matching with required type. For example
+						statement String.class.getName() was converted to expression
+						"java.lang.String"
 						 */
 					} catch (SpoonClassNotFoundException e) {
 						// ignore it. Do not simplify this element

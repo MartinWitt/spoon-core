@@ -30,7 +30,7 @@ public class ChangeResolver {
 	public ChangeResolver(ChangeCollector changeCollector, CtElement element) {
 		this.changeCollector = changeCollector;
 		this.element = element;
-		changedRoles = element != null ? changeCollector.getChanges(element) : Collections.emptySet();
+		changedRoles = (element != null) ? changeCollector.getChanges(element) : Collections.emptySet();
 	}
 
 	/**

@@ -275,7 +275,7 @@ public abstract class Parameters {
 	 * Tells if a given field is a template parameter.
 	 */
 	public static boolean isParameterSource(Field field) {
-		return (field.getAnnotation(Parameter.class) != null) || TemplateParameter.class.isAssignableFrom(field.getType());
+		return field.getAnnotation(Parameter.class) != null || TemplateParameter.class.isAssignableFrom(field.getType());
 	}
 
 	static CtTypeReference templateParameterType;

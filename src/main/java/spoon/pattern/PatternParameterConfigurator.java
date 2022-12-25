@@ -676,7 +676,7 @@ public class PatternParameterConfigurator {
 							visitStringAttribute(roleHandler, element, e.getKey(), e.getValue());
 						}
 					}
-					//else it is a CtLiteral with non string value
+					// else it is a CtLiteral with non string value
 				}
 			}
 		}

@@ -390,8 +390,8 @@ public class CloneVisitor extends spoon.reflect.visitor.CtScanner {
 		this.builder.copy(ifElement, aCtIf);
 		aCtIf.setAnnotations(this.cloneHelper.clone(ifElement.getAnnotations()));
 		aCtIf.setCondition(this.cloneHelper.clone(ifElement.getCondition()));
-		aCtIf.setThenStatement(this.cloneHelper.clone(((spoon.reflect.code.CtStatement) (ifElement.getThenStatement()))));
-		aCtIf.setElseStatement(this.cloneHelper.clone(((spoon.reflect.code.CtStatement) (ifElement.getElseStatement()))));
+		aCtIf.setThenStatement(this.cloneHelper.clone(( (spoon.reflect.code.CtStatement) (ifElement.getThenStatement()))));
+		aCtIf.setElseStatement(this.cloneHelper.clone(( (spoon.reflect.code.CtStatement) (ifElement.getElseStatement()))));
 		aCtIf.setComments(this.cloneHelper.clone(ifElement.getComments()));
 		this.cloneHelper.tailor(ifElement, aCtIf);
 		this.other = aCtIf;

@@ -34,7 +34,7 @@ public class CtAnnotationTypeImpl extends CtTypeImpl implements CtAnnotationType
 
 	@Override
 	public void accept(CtVisitor v) {
-		v.visitCtAnnotationType(this);
+		v.<Annotation>visitCtAnnotationType(this);
 	}
 
 	@Override

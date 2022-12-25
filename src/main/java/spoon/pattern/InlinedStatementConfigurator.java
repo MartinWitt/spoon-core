@@ -78,7 +78,7 @@ public class InlinedStatementConfigurator {
 	 * @return this to support fluent API
 	 */
 	InlinedStatementConfigurator byElement(CtElement element) {
-		CtStatement stmt = element instanceof CtStatement ? (CtStatement) element : element.getParent(CtStatement.class);
+		CtStatement stmt = (element instanceof CtStatement) ? (CtStatement) element : element.getParent(CtStatement.class);
 		//called for first parent statement of all current parameter substitutions
 		stmt.accept(new CtAbstractVisitor() {
 			@Override

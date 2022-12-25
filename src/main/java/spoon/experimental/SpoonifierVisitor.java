@@ -252,100 +252,100 @@ public class SpoonifierVisitor extends CtScanner {
 	class PropertyScanner extends CtInheritanceScanner {
 		public String variableName;
 
-		/**
-		 * visitLiteral
-		 *
-		 * @param element
-		 */
-		@Override
-		public void visitCtLiteral(CtLiteral element) {
-			if (element.getType().isPrimitive()) {
-				result.append(printTabs()).append(variableName).append(".setValue((").append(element.getType().getSimpleName()).append(") ").append(element).append(");\n");
-				if (element.getBase() != null) {
-					result.append(printTabs()).append(variableName).append(".setBase(LiteralBase.").append(element.getBase().name()).append(");\n");
+			/**
+			 * visitLiteral
+			 *
+			 * @param element
+			 */
+			@Override
+			public void visitCtLiteral(CtLiteral element) {
+				if (element.getType().isPrimitive()) {
+					result.append(printTabs()).append(variableName).append(".setValue((").append(element.getType().getSimpleName()).append(") ").append(element).append(");\n");
+					if (element.getBase() != null) {
+						result.append(printTabs()).append(variableName).append(".setBase(LiteralBase.").append(element.getBase().name()).append(");\n");
+					}
+				} else {
+					if (element.getType().getQualifiedName().equals("java.lang.String")) {
+						result.append(printTabs()).append(variableName).append(".setValue(\"").append(StringEscapeUtils.escapeJava(((String) (element.getValue())))).append("\");\n");
+					}
 				}
-			} else {
-				if (element.getType().getQualifiedName().equals("java.lang.String")) {
-					result.append(printTabs()).append(variableName).append(".setValue(\"").append(StringEscapeUtils.escapeJava(((String) (element.getValue())))).append("\");\n");
+				super.visitCtLiteral(element);
+			}
+
+			@Override
+			public void visitCtBinaryOperator(CtBinaryOperator element) {
+				result.append(printTabs() + variableName + ".setKind(BinaryOperatorKind." + element.getKind().name() + ");\n");
+				super.visitCtBinaryOperator(element);
+			}
+
+			@Override
+			public void visitCtUnaryOperator(CtUnaryOperator element) {
+				result.append(printTabs() + variableName + ".setKind(UnaryOperatorKind." + element.getKind().name() + ");\n");
+				super.visitCtUnaryOperator(element);
+			}
+
+			@Override
+			public void visitCtOperatorAssignment(CtOperatorAssignment element) {
+				result.append(printTabs() + variableName + ".setKind(BinaryOperatorKind." + element.getKind().name() + ");\n");
+				super.visitCtOperatorAssignment(element);
+			}
+
+			@Override
+			public void visitCtComment(CtComment element) {
+				result.append(printTabs() + variableName + ".setCommentType(CtComment.CommentType." + element.getCommentType().name() + ");\n");
+				result.append(printTabs() + variableName + ".setContent(\"" + StringEscapeUtils.escapeJava(element.getContent()) + "\");\n");
+				super.visitCtComment(element);
+			}
+
+			@Override
+			public void visitCtParameter(CtParameter element) {
+				if (element.isVarArgs()) {
+					result.append(printTabs() + variableName + ".setVarArgs(true);\n");
+				}
+				super.visitCtParameter(element);
+			}
+
+			@Override
+			public void visitCtMethod(CtMethod element) {
+				if (element.isDefaultMethod()) {
+					result.append(printTabs() + variableName + ".setDefaultMethod(true);\n");
+				}
+				super.visitCtMethod(element);
+			}
+
+			@Override
+			public void scanCtReference(CtReference element) {
+				result.append(printTabs() + variableName + ".setSimpleName(\"" + element.getSimpleName() + "\");\n");
+			}
+
+			@Override
+			public void scanCtNamedElement(CtNamedElement element) {
+				result.append(printTabs() + variableName + ".setSimpleName(\"" + element.getSimpleName() + "\");\n");
+			}
+
+			@Override
+			public void scanCtModifiable(CtModifiable element) {
+				if (!element.getModifiers().isEmpty()) {
+					result.append(printTabs() + "Set<ModifierKind> " + variableName + "Modifiers = new HashSet<>();\n");
+					for (ModifierKind mod : element.getModifiers()) {
+						result.append(printTabs() + variableName + "Modifiers.add(ModifierKind." + mod.name() + ");\n");
+					}
+					result.append(printTabs() + variableName + ".setModifiers(" + variableName + "Modifiers);\n");
 				}
 			}
-			super.visitCtLiteral(element);
-		}
 
-		@Override
-		public void visitCtBinaryOperator(CtBinaryOperator element) {
-			result.append(printTabs() + variableName + ".setKind(BinaryOperatorKind." + element.getKind().name() + ");\n");
-			super.visitCtBinaryOperator(element);
-		}
-
-		@Override
-		public void visitCtUnaryOperator(CtUnaryOperator element) {
-			result.append(printTabs() + variableName + ".setKind(UnaryOperatorKind." + element.getKind().name() + ");\n");
-			super.visitCtUnaryOperator(element);
-		}
-
-		@Override
-		public void visitCtOperatorAssignment(CtOperatorAssignment element) {
-			result.append(printTabs() + variableName + ".setKind(BinaryOperatorKind." + element.getKind().name() + ");\n");
-			super.visitCtOperatorAssignment(element);
-		}
-
-		@Override
-		public void visitCtComment(CtComment element) {
-			result.append(printTabs() + variableName + ".setCommentType(CtComment.CommentType." + element.getCommentType().name() + ");\n");
-			result.append(printTabs() + variableName + ".setContent(\"" + StringEscapeUtils.escapeJava(element.getContent()) + "\");\n");
-			super.visitCtComment(element);
-		}
-
-		@Override
-		public void visitCtParameter(CtParameter element) {
-			if (element.isVarArgs()) {
-				result.append(printTabs() + variableName + ".setVarArgs(true);\n");
-			}
-			super.visitCtParameter(element);
-		}
-
-		@Override
-		public void visitCtMethod(CtMethod element) {
-			if (element.isDefaultMethod()) {
-				result.append(printTabs() + variableName + ".setDefaultMethod(true);\n");
-			}
-			super.visitCtMethod(element);
-		}
-
-		@Override
-		public void scanCtReference(CtReference element) {
-			result.append(printTabs() + variableName + ".setSimpleName(\"" + element.getSimpleName() + "\");\n");
-		}
-
-		@Override
-		public void scanCtNamedElement(CtNamedElement element) {
-			result.append(printTabs() + variableName + ".setSimpleName(\"" + element.getSimpleName() + "\");\n");
-		}
-
-		@Override
-		public void scanCtModifiable(CtModifiable element) {
-			if (!element.getModifiers().isEmpty()) {
-				result.append(printTabs() + "Set<ModifierKind> " + variableName + "Modifiers = new HashSet<>();\n");
-				for (ModifierKind mod : element.getModifiers()) {
-					result.append(printTabs() + variableName + "Modifiers.add(ModifierKind." + mod.name() + ");\n");
+			@Override
+			public void scanCtStatement(CtStatement element) {
+				if (element.getLabel() != null) {
+					result.append(printTabs() + variableName + ".setLabel(\"" + element.getLabel() + "\");\n");
 				}
-				result.append(printTabs() + variableName + ".setModifiers(" + variableName + "Modifiers);\n");
 			}
-		}
 
-		@Override
-		public void scanCtStatement(CtStatement element) {
-			if (element.getLabel() != null) {
-				result.append(printTabs() + variableName + ".setLabel(\"" + element.getLabel() + "\");\n");
+			@Override
+			public void scanCtLabelledFlowBreak(CtLabelledFlowBreak element) {
+				if (element.getTargetLabel() != null) {
+					result.append(printTabs() + variableName + ".setTargetLabel(\"" + element.getTargetLabel() + "\");\n");
+				}
 			}
-		}
-
-		@Override
-		public void scanCtLabelledFlowBreak(CtLabelledFlowBreak element) {
-			if (element.getTargetLabel() != null) {
-				result.append(printTabs() + variableName + ".setTargetLabel(\"" + element.getTargetLabel() + "\");\n");
-			}
-		}
 	}
 }

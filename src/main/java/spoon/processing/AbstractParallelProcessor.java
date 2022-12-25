@@ -57,7 +57,7 @@ public abstract class AbstractParallelProcessor<E extends CtElement> extends Abs
 	 */
 	public AbstractParallelProcessor(Iterable<Processor<E>> processors) {
 		// added cast because constructors need int
-		int processorNumber = (int) StreamSupport.stream(processors.spliterator(), false).count();
+		int processorNumber = ((int) (StreamSupport.stream(processors.spliterator(), false).count()));
 		processorQueue = new ArrayBlockingQueue<>(processorNumber);
 		processors.forEach(processorQueue::add);
 		service = Executors.newFixedThreadPool(processorNumber);

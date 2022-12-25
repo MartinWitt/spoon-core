@@ -297,25 +297,25 @@ public class ElementNode extends AbstractPrimitiveMatcher {
 		return map;
 	}
 
-		@Override
-		public ImmutableMap matchTarget(Object target, ImmutableMap parameters) {
-			if (target == null) {
-				return null;
-			}
-			if (target.getClass() != elementType.getImplementationClass().getActualClass()) {
-				return null;
-			}
-			// it is spoon element, it matches if to be matched attributes matches
-			// to be matched attributes must be same or substituted
-			// iterate over all attributes of to be matched class
-			for (Map.Entry<MetamodelProperty, RootNode> e : roleToNode.entrySet()) {
-				parameters = matchesRole(parameters, ((CtElement) (target)), e.getKey(), e.getValue());
-				if (parameters == null) {
-					return null;
-				}
-			}
-			return parameters;
+	@Override
+	public ImmutableMap matchTarget(Object target, ImmutableMap parameters) {
+		if (target == null) {
+			return null;
 		}
+		if (target.getClass() != elementType.getImplementationClass().getActualClass()) {
+			return null;
+		}
+		// it is spoon element, it matches if to be matched attributes matches
+		// to be matched attributes must be same or substituted
+		// iterate over all attributes of to be matched class
+		for (Map.Entry<MetamodelProperty, RootNode> e : roleToNode.entrySet()) {
+			parameters = matchesRole(parameters, ((CtElement) (target)), e.getKey(), e.getValue());
+			if (parameters == null) {
+				return null;
+			}
+		}
+		return parameters;
+	}
 
 	protected ImmutableMap matchesRole(ImmutableMap parameters, CtElement target, MetamodelProperty mmField, RootNode attrNode) {
 		if (!isMatchingRole(mmField.getRole(), elementType.getMetamodelInterface().getActualClass())) {
@@ -359,10 +359,10 @@ public class ElementNode extends AbstractPrimitiveMatcher {
 		return true;
 	}
 
-		@Override
-		public String toString() {
-			return elementType.getName() + ": " + super.toString();
-		}
+	@Override
+	public String toString() {
+		return elementType.getName() + ": " + super.toString();
+	}
 
 	public MetamodelConcept getElementType() {
 		return elementType;
@@ -372,14 +372,14 @@ public class ElementNode extends AbstractPrimitiveMatcher {
 		this.elementType = elementType;
 	}
 
-		@Override
-		public Quantifier getMatchingStrategy() {
-			return Quantifier.POSSESSIVE;
-		}
+	@Override
+	public Quantifier getMatchingStrategy() {
+		return Quantifier.POSSESSIVE;
+	}
 
-		@Override
-		public boolean isTryNextMatch(ImmutableMap parameters) {
-			// it always matches only once
-			return false;
-		}
+	@Override
+	public boolean isTryNextMatch(ImmutableMap parameters) {
+		// it always matches only once
+		return false;
+	}
 }

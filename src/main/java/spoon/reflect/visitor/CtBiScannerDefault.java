@@ -384,8 +384,8 @@ public class CtBiScannerDefault extends spoon.reflect.visitor.CtAbstractBiScanne
 		enter(ifElement);
 		biScan(spoon.reflect.path.CtRole.ANNOTATION, ifElement.getAnnotations(), other.getAnnotations());
 		biScan(spoon.reflect.path.CtRole.CONDITION, ifElement.getCondition(), other.getCondition());
-		biScan(spoon.reflect.path.CtRole.THEN, ((spoon.reflect.code.CtStatement) (ifElement.getThenStatement())), other.getThenStatement());
-		biScan(spoon.reflect.path.CtRole.ELSE, ((spoon.reflect.code.CtStatement) (ifElement.getElseStatement())), other.getElseStatement());
+		biScan(spoon.reflect.path.CtRole.THEN, ( (spoon.reflect.code.CtStatement) (ifElement.getThenStatement())), other.getThenStatement());
+		biScan(spoon.reflect.path.CtRole.ELSE, ( (spoon.reflect.code.CtStatement) (ifElement.getElseStatement())), other.getElseStatement());
 		biScan(spoon.reflect.path.CtRole.COMMENT, ifElement.getComments(), other.getComments());
 		exit(ifElement);
 	}

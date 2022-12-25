@@ -466,8 +466,8 @@ public class ElementPrinterHelper {
 			return true;
 		}
 		if (ifStmt.getElseStatement() instanceof CtBlock) {
-			CtBlock block = (CtBlock) ifStmt.getElseStatement();
-			return ((block.getStatements().size() == 1) && (block.getStatement(0) instanceof CtIf));
+			CtBlock block = ((CtBlock) (ifStmt.getElseStatement()));
+			return (block.getStatements().size() == 1) && block.getStatement(0) instanceof CtIf;
 		}
 		return false;
 	}

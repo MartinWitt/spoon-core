@@ -502,8 +502,8 @@ public abstract class CtScanner implements CtVisitor {
 		enter(ifElement);
 		scan(CtRole.ANNOTATION, ifElement.getAnnotations());
 		scan(CtRole.CONDITION, ifElement.getCondition());
-		scan(CtRole.THEN, ((CtStatement) (ifElement.getThenStatement())));
-		scan(CtRole.ELSE, ((CtStatement) (ifElement.getElseStatement())));
+		scan(CtRole.THEN, ( (CtStatement) (ifElement.getThenStatement())));
+		scan(CtRole.ELSE, ( (CtStatement) (ifElement.getElseStatement())));
 		scan(CtRole.COMMENT, ifElement.getComments());
 		exit(ifElement);
 	}
