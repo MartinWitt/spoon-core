@@ -1,4 +1,7 @@
 # SpoonRebuilder
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This is a simple tool to rebuild [Spoon](https://github.com/INRIA/spoon) without generics.
 Spoon is super backward compatible, and therefore we keep the generics in the codebase.
@@ -67,6 +70,20 @@ Sniperprinting a large project has some small problems. The following fixes are 
 ## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/MartinWitt"><img src="https://avatars.githubusercontent.com/u/25300639?v=4?s=100" width="100px;" alt="MartinWitt"/><br /><sub><b>MartinWitt</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=MartinWitt" title="Code">💻</a> <a href="#maintenance-MartinWitt" title="Maintenance">🚧</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 
