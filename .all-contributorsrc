@@ -15,6 +15,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "SirYwell",
+      "name": "Hannes Greule",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11150076?v=4",
+      "profile": "https://github.com/SirYwell",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
