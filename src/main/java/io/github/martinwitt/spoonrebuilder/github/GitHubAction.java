@@ -119,7 +119,6 @@ public class GitHubAction {
             commands.endGroup();
             commands.error("Error while checking build result" + e);
             logger.atError().withThrowable(e).log("Error while checking build result");
-            e.printStackTrace();
         }
     }
 

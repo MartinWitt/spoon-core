@@ -1,12 +1,17 @@
 package io.github.martinwitt.spoonrebuilder.github;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public class RepoCheckout {
 
+    private static final Logger logger =
+            LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private String repoURL;
     private Path outputPath;
     private Git git;
@@ -25,8 +30,7 @@ public class RepoCheckout {
                     .call();
             git.checkout().setName(revCommit.getName()).call();
         } catch (GitAPIException e) {
-
-            e.printStackTrace();
+            logger.atError().withThrowable(e).log("Error while cloning repo");
         }
     }
 
@@ -38,7 +42,7 @@ public class RepoCheckout {
         try {
             return git.log().call().iterator().next();
         } catch (GitAPIException e) {
-            e.printStackTrace();
+            logger.atError().withThrowable(e).log("Error while getting current commit");
             return null;
         }
     }
