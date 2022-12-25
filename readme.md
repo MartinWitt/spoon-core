@@ -64,3 +64,13 @@ Sniperprinting a large project has some small problems. The following fixes are 
 - [CastSniperFixer.java](src/main/java/io/github/martinwitt/spoonrebuilder/fixes/CastSniperFixer.java) fixes the sniper printing of casts. Also, it includes some fixes for sniper printing problems with comments.
 - [GenericTypeArgumentsFixer.java](src/main/java/io/github/martinwitt/spoonrebuilder/fixes/GenericTypeArgumentsFixer.java) fixes the sniper printing of inner generic type arguments.
 - [PomGroupIdFixer](src/main/java/io/github/martinwitt/spoonrebuilder/fixes/PomGroupIdFixer.java) fixes the groupId of the pom.xml file. This is necessary because the groupId is changed to `io.github.martinwitt.spoonrebuilder` by jitpack.io.
+## Contributors ✨
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
