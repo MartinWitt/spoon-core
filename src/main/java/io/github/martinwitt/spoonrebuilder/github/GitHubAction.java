@@ -76,7 +76,9 @@ public class GitHubAction {
             return;
         }
         for (RevCommit revCommit : commits) {
+            commands.group("Rebuild Spoon for commit " + revCommit.getName());
             refactorRepo(gitFolderForSpoon, commands, revCommit);
+            commands.endGroup();
         }
     }
 
