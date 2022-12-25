@@ -1,6 +1,6 @@
 # SpoonRebuilder
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This is a simple tool to rebuild [Spoon](https://github.com/INRIA/spoon) without generics.
@@ -76,6 +76,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center"><a href="https://github.com/MartinWitt"><img src="https://avatars.githubusercontent.com/u/25300639?v=4?s=100" width="100px;" alt="MartinWitt"/><br /><sub><b>MartinWitt</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=MartinWitt" title="Code">💻</a> <a href="#maintenance-MartinWitt" title="Maintenance">🚧</a></td>
+      <td align="center"><a href="https://github.com/SirYwell"><img src="https://avatars.githubusercontent.com/u/11150076?v=4?s=100" width="100px;" alt="Hannes Greule"/><br /><sub><b>Hannes Greule</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=SirYwell" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
