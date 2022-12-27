@@ -5,6 +5,7 @@ import io.github.martinwitt.spoonrebuilder.api.ResultChecker;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import javax.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
  * Checks if the result of the SpoonRebuilder is correct. Checking the build result is done by executing a maven build with {@code mvn clean package}.
  * If the build fails, an @{code IllegalStateException} is thrown. If the build succeeds, the result is cleaned up with {@code mvn clean}.
  */
+@ApplicationScoped
 public class ResultCheckerImpl implements ResultChecker {
     private static final Logger logger =
             LogManager.getLogger(MethodHandles.lookup().lookupClass());

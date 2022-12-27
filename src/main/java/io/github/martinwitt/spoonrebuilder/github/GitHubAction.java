@@ -27,7 +27,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
-@ApplicationScoped
 public class GitHubAction {
 
     private static final Logger logger =
