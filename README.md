@@ -2,6 +2,7 @@
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+[![Qodana](https://github.com/MartinWitt/spoon-core/actions/workflows/qodana.yml/badge.svg)](https://github.com/MartinWitt/spoon-core/actions/workflows/qodana.yml)
 
 This is a simple tool to rebuild [Spoon](https://github.com/INRIA/spoon) without generics.
 Spoon is super backward compatible, and therefore we keep the generics in the codebase.
@@ -58,7 +59,7 @@ dependencies {
 </dependency>
 ```
 ## License
-The code is licensed under the [[MIT License](](https://opensource.org/licenses/MIT).
+The code is licensed under the [MIT License]((https://opensource.org/licenses/MIT).
 Spoon is licensed under the [CeCILL-C License](https://github.com/INRIA/spoon/blob/master/LICENSE-CECILL-C.txt) or  [MIT License](https://github.com/INRIA/spoon/blob/master/LICENSE-MIT.txt) at your option. SPDX-License-Identifier: (MIT OR CECILL-C).
 Therefore, these binaries are licensed under the same licenses as Spoon.
 ## SniperPrinting Fixes
