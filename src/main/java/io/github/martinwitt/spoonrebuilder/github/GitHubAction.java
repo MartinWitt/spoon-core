@@ -1,7 +1,7 @@
 package io.github.martinwitt.spoonrebuilder.github;
 
-import io.github.martinwitt.spoonrebuilder.ResultChecker;
 import io.github.martinwitt.spoonrebuilder.SpoonRebuilder;
+import io.github.martinwitt.spoonrebuilder.api.ResultChecker;
 import io.quarkiverse.githubaction.Action;
 import io.quarkiverse.githubaction.Commands;
 import io.quarkiverse.githubaction.Inputs;
@@ -33,6 +33,8 @@ public class GitHubAction {
     private static final Logger logger =
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
+    private ResultChecker resultChecker;
+
     @Inject
     @ConfigProperty(name = "rebuilder.repoUrl")
     String repoUrl;
@@ -56,6 +58,10 @@ public class GitHubAction {
     String githubToken;
 
     private static final String TEMP_PATH_SPOON = "./spoon_git";
+
+    GitHubAction(ResultChecker resultChecker) {
+        this.resultChecker = resultChecker;
+    }
 
     @Action
     public void rebuildSpoon(Inputs inputs, Commands commands) {
@@ -111,7 +117,7 @@ public class GitHubAction {
         try {
             commands.notice("Checking build result");
             commands.group("Maven build");
-            new ResultChecker(outputPath).checkBuildResult();
+            resultChecker.checkBuildResult(outputPath);
             commands.endGroup();
             commands.notice("Build result is correct");
             pushResultToGitHub(outputPath, commands, commit);

@@ -37,7 +37,7 @@ Add it in your root `build.gradle` at the end of repositories:
 2. Add the dependency
 ```groovy
 dependencies {
-		implementation 'com.github.MartinWitt:spoon-core:spoon-core-<commit>'
+		implementation 'com.github.MartinWitt:spoon-core:commit-<commit>'
 }
 ```
 ### Maven
@@ -74,12 +74,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tbody>
-    <tr>
-      <td align="center"><a href="https://github.com/MartinWitt"><img src="https://avatars.githubusercontent.com/u/25300639?v=4?s=100" width="100px;" alt="MartinWitt"/><br /><sub><b>MartinWitt</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=MartinWitt" title="Code">💻</a> <a href="#maintenance-MartinWitt" title="Maintenance">🚧</a></td>
-      <td align="center"><a href="https://github.com/SirYwell"><img src="https://avatars.githubusercontent.com/u/11150076?v=4?s=100" width="100px;" alt="Hannes Greule"/><br /><sub><b>Hannes Greule</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=SirYwell" title="Code">💻</a></td>
-    </tr>
-  </tbody>
+<tbody>
+	<tr>
+	<td align="center"><a href="https://github.com/MartinWitt"><img src="https://avatars.githubusercontent.com/u/25300639?v=4?s=100" width="100px;" alt="MartinWitt"/><br /><sub><b>MartinWitt</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=MartinWitt" title="Code">💻</a> <a href="#maintenance-MartinWitt" title="Maintenance">🚧</a></td>
+	<td align="center"><a href="https://github.com/SirYwell"><img src="https://avatars.githubusercontent.com/u/11150076?v=4?s=100" width="100px;" alt="Hannes Greule"/><br /><sub><b>Hannes Greule</b></sub></a><br /><a href="https://github.com/MartinWitt/spoon-core/commits?author=SirYwell" title="Code">💻</a></td>
+	</tr>
+</tbody>
 </table>
 
 <!-- markdownlint-restore -->
