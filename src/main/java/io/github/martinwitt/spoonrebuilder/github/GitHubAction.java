@@ -1,10 +1,12 @@
 package io.github.martinwitt.spoonrebuilder.github;
 
 import io.github.martinwitt.spoonrebuilder.SpoonRebuilder;
+import io.github.martinwitt.spoonrebuilder.api.ReleaseService;
 import io.github.martinwitt.spoonrebuilder.api.ResultChecker;
 import io.quarkiverse.githubaction.Action;
 import io.quarkiverse.githubaction.Commands;
 import io.quarkiverse.githubaction.Inputs;
+import io.quarkiverse.githubapp.event.Release;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +15,6 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +34,7 @@ public class GitHubAction {
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     private ResultChecker resultChecker;
+    private ReleaseService releaseService;
 
     @Inject
     @ConfigProperty(name = "rebuilder.repoUrl")
@@ -58,8 +60,9 @@ public class GitHubAction {
 
     private static final String TEMP_PATH_SPOON = "./spoon_git";
 
-    GitHubAction(ResultChecker resultChecker) {
+    GitHubAction(ResultChecker resultChecker, ReleaseService releaseService) {
         this.resultChecker = resultChecker;
+        this.releaseService = releaseService;
     }
 
     @Action
@@ -141,7 +144,7 @@ public class GitHubAction {
             createTag(commit, git, credentialsProvider);
             // push the changes to the upstream repository
             gitPushResults(commands, git, credentialsProvider);
-            createRelease(commit);
+            releaseService.createRelease(githubToken);
             git.close();
             commands.notice("Commit " + commit.getName() + " was pushed to GitHub and a release created\n");
         }
