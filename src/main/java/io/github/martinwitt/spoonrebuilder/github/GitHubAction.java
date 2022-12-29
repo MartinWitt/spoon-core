@@ -6,7 +6,6 @@ import io.github.martinwitt.spoonrebuilder.api.ResultChecker;
 import io.quarkiverse.githubaction.Action;
 import io.quarkiverse.githubaction.Commands;
 import io.quarkiverse.githubaction.Inputs;
-import io.quarkiverse.githubapp.event.Release;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
