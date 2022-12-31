@@ -1,4 +1,4 @@
-name: Qodana
+name: FB-Infer
 on:
   workflow_dispatch:
   pull_request:
