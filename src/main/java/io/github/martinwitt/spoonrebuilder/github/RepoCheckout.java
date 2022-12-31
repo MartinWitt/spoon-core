@@ -2,6 +2,8 @@ package io.github.martinwitt.spoonrebuilder.github;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
@@ -17,9 +19,9 @@ public class RepoCheckout {
     private Git git;
 
     public RepoCheckout(String repoURL, Path outputPath, RevCommit revCommit) {
-        this.repoURL = repoURL;
-        this.outputPath = outputPath;
-        cloneRepo(revCommit);
+        this.repoURL = Objects.requireNonNull(repoURL);
+        this.outputPath = Objects.requireNonNull(outputPath);
+        cloneRepo(Objects.requireNonNull(revCommit));
     }
 
     private void cloneRepo(RevCommit revCommit) {
@@ -38,6 +40,7 @@ public class RepoCheckout {
         git.close();
     }
 
+    @Nullable
     public RevCommit getCurrentCommit() {
         try {
             return git.log().call().iterator().next();

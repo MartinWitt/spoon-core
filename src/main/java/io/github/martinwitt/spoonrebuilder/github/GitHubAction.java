@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
@@ -24,8 +22,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
 
 public class GitHubAction {
 
@@ -55,6 +51,7 @@ public class GitHubAction {
     @ConfigProperty(name = "rebuilder.upstream-branch")
     String upstreamBranch;
 
+    @SuppressWarnings("NullAway")
     String githubToken;
 
     private static final String TEMP_PATH_SPOON = "./spoon_git";
@@ -69,6 +66,10 @@ public class GitHubAction {
         commands.notice("Rebuild Spoon");
         Path gitFolderForSpoon = Path.of(TEMP_PATH_SPOON);
         inputs.get("token").ifPresent(token -> githubToken = token);
+        if (githubToken == null) {
+            commands.error("No token found");
+            return;
+        }
         var commits = GitHubUtils.getNewCommitsForSpoon();
         commands.notice(
                 """
@@ -89,9 +90,13 @@ public class GitHubAction {
         }
     }
 
-    public void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
+    private void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
         try {
             RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon, revCommit);
+            if (repo.getCurrentCommit() == null) {
+                commands.error("No current commit found");
+                return;
+            }
             commands.notice("Repo on commit " + repo.getCurrentCommit().getName());
             Path outputPath = Path.of(outputFolder);
             SpoonRebuilder spoonRebuilder = new SpoonRebuilder(gitFolderForSpoon, outputPath);
@@ -184,23 +189,5 @@ public class GitHubAction {
                 .setMessage("Rebuild Spoon for commit hash: " + commit.getName())
                 .setCredentialsProvider(credentialsProvider)
                 .call();
-    }
-
-    private void createRelease(RevCommit commit) throws IOException {
-        GHRepository repo = GitHub.connect("martinWitt", githubToken).getRepository("martinwitt/spoon-core");
-        repo.createRelease("commit-" + commit.getName())
-                .body(
-                        """
-                       Rebuild Spoon for commit hash:  %s
-                       Rebuilder hash: %s
-                       Date: %s
-                       Time: %s
-                       """
-                                .formatted(
-                                        commit.getName(),
-                                        repo.getBranch("master").getSHA1(),
-                                        LocalDate.now(),
-                                        LocalTime.now()))
-                .create();
     }
 }
