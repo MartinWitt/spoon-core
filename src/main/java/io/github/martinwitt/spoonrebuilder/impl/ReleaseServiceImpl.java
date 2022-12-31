@@ -30,6 +30,8 @@ public class ReleaseServiceImpl implements ReleaseService {
     private static final String INRIA_SPOON = "https://github.com/INRIA/spoon";
     private static final Logger logger =
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
+    @SuppressWarnings("NullAway.Init")
     private Git git;
 
     @Override

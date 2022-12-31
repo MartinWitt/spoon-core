@@ -1,5 +1,6 @@
 package io.github.martinwitt.spoonrebuilder.fixes;
 
+import com.google.errorprone.annotations.Var;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -26,9 +27,7 @@ public class CastSniperFixer implements UnaryOperator<String> {
     }
 
     @Override
-    public String apply(String s) {
-        String content = s;
-
+    public String apply(@Var String content) {
         for (String type : names) {
             if (type.equals("CtLiteral")) {
                 Matcher matcher = ctLiteral.matcher(content);

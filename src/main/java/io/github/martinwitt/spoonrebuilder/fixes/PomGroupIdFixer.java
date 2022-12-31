@@ -1,5 +1,6 @@
 package io.github.martinwitt.spoonrebuilder.fixes;
 
+import com.google.errorprone.annotations.Var;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,7 @@ public class PomGroupIdFixer {
     public void fixPom(List<Path> files) {
         files.stream().filter(this::isPom).forEach(f -> {
             try {
-                String content = Files.readString(f);
+                @Var String content = Files.readString(f);
                 content = content.replace(ARTIFACT_ID_SPOON_CORE, GROUP_ID + "\n" + ARTIFACT_ID_SPOON_CORE);
                 Files.write(f, content.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
@@ -29,7 +30,7 @@ public class PomGroupIdFixer {
         });
     }
 
-    private boolean isPom(Path f) {
-        return f.getFileName().toString().equals("pom.xml");
+    private boolean isPom(Path path) {
+        return path.getFileName() != null && path.getFileName().toString().equals("pom.xml");
     }
 }

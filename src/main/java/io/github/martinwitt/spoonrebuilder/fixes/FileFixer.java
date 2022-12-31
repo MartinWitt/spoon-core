@@ -1,5 +1,6 @@
 package io.github.martinwitt.spoonrebuilder.fixes;
 
+import com.google.errorprone.annotations.Var;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
@@ -18,7 +19,7 @@ public record FileFixer(Function<String, String> function) implements Consumer<P
     public void accept(Path path) {
         if (!Files.isDirectory(path) && isJavaFile(path)) {
             try {
-                String content = Files.readString(path);
+                @Var String content = Files.readString(path);
                 Files.writeString(path, function.apply(content), StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e) {
                 logger.atError().withThrowable(e).log("Error while fixing file {}", path);
@@ -27,6 +28,6 @@ public record FileFixer(Function<String, String> function) implements Consumer<P
     }
 
     private boolean isJavaFile(Path path) {
-        return path.getFileName().toString().endsWith("java");
+        return path.getFileName() != null && path.getFileName().toString().endsWith("java");
     }
 }

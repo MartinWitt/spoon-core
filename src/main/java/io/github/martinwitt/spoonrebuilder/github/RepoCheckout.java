@@ -2,6 +2,8 @@ package io.github.martinwitt.spoonrebuilder.github;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
@@ -14,12 +16,14 @@ public class RepoCheckout {
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private String repoURL;
     private Path outputPath;
+
+    @Nullable
     private Git git;
 
     public RepoCheckout(String repoURL, Path outputPath, RevCommit revCommit) {
-        this.repoURL = repoURL;
-        this.outputPath = outputPath;
-        cloneRepo(revCommit);
+        this.repoURL = Objects.requireNonNull(repoURL);
+        this.outputPath = Objects.requireNonNull(outputPath);
+        cloneRepo(Objects.requireNonNull(revCommit));
     }
 
     private void cloneRepo(RevCommit revCommit) {
@@ -35,10 +39,16 @@ public class RepoCheckout {
     }
 
     public void close() {
-        git.close();
+        if (git != null) {
+            git.close();
+        }
     }
 
+    @Nullable
     public RevCommit getCurrentCommit() {
+        if (git == null) {
+            return null;
+        }
         try {
             return git.log().call().iterator().next();
         } catch (GitAPIException e) {
