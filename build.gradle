@@ -5,6 +5,7 @@ plugins {
 	id "org.kordamp.gradle.jandex" version "1.1.0"
 	id "net.ltgt.errorprone" version "3.0.1"
 	id("maven-publish")
+	id 'org.checkerframework' version '0.6.20'
 }
 
 repositories {
@@ -32,6 +33,7 @@ dependencies {
 	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 	implementation 'com.google.errorprone:error_prone_annotations:2.3.2'
 	errorprone "com.google.errorprone:error_prone_core:2.4.0"
+	implementation group: 'org.checkerframework', name: 'checker-qual', version: '3.28.0'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -99,4 +101,10 @@ tasks.withType(GenerateModuleMetadata).configureEach {
 	// The value 'enforced-platform' is provided in the validation
 	// error message you got
 	suppressedValidationErrors.add('enforced-platform')
+}
+checkerFramework {
+	checkers = [
+		'org.checkerframework.checker.nullness.NullnessChecker',
+		'org.checkerframework.checker.units.UnitsChecker'
+	]
 }

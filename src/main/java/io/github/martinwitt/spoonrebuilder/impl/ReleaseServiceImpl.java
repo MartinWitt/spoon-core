@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -31,7 +32,7 @@ public class ReleaseServiceImpl implements ReleaseService {
     private static final Logger logger =
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-    @SuppressWarnings("NullAway.Init")
+    @SuppressWarnings({"NullAway.Init", "initialization"})
     private Git git;
 
     @Override
@@ -45,8 +46,12 @@ public class ReleaseServiceImpl implements ReleaseService {
                 logger.atError().log("No tags found");
                 return;
             }
-            List<RevCommit> commitsTillTag =
-                    getCommitsTillTag(tag.getTarget().getObjectId().getName());
+            ObjectId objectId = tag.getTarget().getObjectId();
+            if (objectId == null) {
+                logger.atError().log("Commit id is null");
+                return;
+            }
+            List<RevCommit> commitsTillTag = getCommitsTillTag(objectId.getName());
             if (commitsTillTag.isEmpty()) {
                 logger.atError().log("No commits found");
                 return;
@@ -116,8 +121,13 @@ public class ReleaseServiceImpl implements ReleaseService {
     }
 
     private int getCommitDate(Ref ref, RevWalk walk) {
+
         try {
-            return walk.parseCommit(ref.getObjectId()).getCommitTime();
+            ObjectId objectId = ref.getObjectId();
+            if (objectId == null) {
+                return 0;
+            }
+            return walk.parseCommit(objectId).getCommitTime();
         } catch (IOException e) {
             logger.atError().withThrowable(e).log("Error while getting commit date");
             return 0;

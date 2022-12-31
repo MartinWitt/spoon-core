@@ -23,6 +23,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+@SuppressWarnings("initialization")
 public class GitHubAction {
 
     private static final Logger logger =
@@ -85,31 +86,52 @@ public class GitHubAction {
         }
         for (RevCommit revCommit : commits) {
             commands.group("Rebuild Spoon for commit " + revCommit.getName());
-            refactorRepo(gitFolderForSpoon, commands, revCommit);
+            Path outputPath = Path.of(outputFolder);
+            boolean refactorSuccess = refactorRepo(gitFolderForSpoon, outputPath, commands, revCommit);
+            if (!refactorSuccess) {
+                commands.error("Refactoring failed");
+                commands.endGroup();
+                continue;
+            }
+            boolean buildCheck = checkBuildResult(outputPath, commands);
+            if (!buildCheck) {
+                commands.error("Build check failed");
+                commands.endGroup();
+                continue;
+            }
+            pushResultToGitHub(outputPath, commands, revCommit);
             commands.endGroup();
         }
     }
 
-    private void refactorRepo(Path gitFolderForSpoon, Commands commands, RevCommit revCommit) {
-        try {
-            RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon, revCommit);
-            if (repo.getCurrentCommit() == null) {
+    private boolean refactorRepo(Path gitFolderForSpoon, Path outputPath, Commands commands, RevCommit revCommit) {
+        try (RepoCheckout repo = new RepoCheckout(repoUrl, gitFolderForSpoon, revCommit);
+                Closeable c = () -> FileUtils.deleteDirectory(gitFolderForSpoon.toFile())) {
+            RevCommit currentCommit = repo.getCurrentCommit();
+            if (currentCommit == null) {
                 commands.error("No current commit found");
-                return;
+                return false;
             }
-            commands.notice("Repo on commit " + repo.getCurrentCommit().getName());
-            Path outputPath = Path.of(outputFolder);
+            commands.notice("Repo on commit " + currentCommit.getName());
             SpoonRebuilder spoonRebuilder = new SpoonRebuilder(gitFolderForSpoon, outputPath);
             spoonRebuilder.rebuild();
-            repo.close();
             FileUtils.deleteDirectory(gitFolderForSpoon.toFile());
             // Check the build result and push it to the server
-            checkBuildResult(outputPath, commands, revCommit);
         } catch (Exception e) {
             commands.error("Error while rebuilding Spoon");
-            commands.error(e.getMessage());
+            commands.error(getErrorMessage(e));
             logger.atInfo().withThrowable(e).log("Error while rebuilding Spoon");
+            return false;
         }
+        return true;
+    }
+    /**
+     * Returns the error message of the exception. If the message is null, it returns an empty string.
+     * @param e The exception.
+     * @return  The error message of the exception or an empty string.
+     */
+    private String getErrorMessage(Exception e) {
+        return e.getMessage() == null ? "" : e.getMessage();
     }
 
     /**
@@ -119,28 +141,28 @@ public class GitHubAction {
      * @param outputPath The path of the output.
      * @param commands
      */
-    private void checkBuildResult(Path outputPath, Commands commands, RevCommit commit) {
+    private boolean checkBuildResult(Path outputPath, Commands commands) {
         try {
             commands.notice("Checking build result");
             commands.group("Maven build");
             resultChecker.checkBuildResult(outputPath);
             commands.endGroup();
             commands.notice("Build result is correct");
-            pushResultToGitHub(outputPath, commands, commit);
+            return true;
         } catch (Exception e) {
             commands.endGroup();
             commands.error("Error while checking build result" + e);
             logger.atError().withThrowable(e).log("Error while checking build result");
+            return false;
         }
     }
 
-    private void pushResultToGitHub(Path outputPath, Commands commands, RevCommit commit)
-            throws GitAPIException, IOException {
+    private boolean pushResultToGitHub(Path outputPath, Commands commands, RevCommit commit) {
         commands.notice("Pushing result to GitHub");
         File gitMergeFolder = new File("./spoon-merged");
         try (Closeable c = () -> FileUtils.deleteDirectory(gitMergeFolder);
-                Closeable output = () -> FileUtils.deleteDirectory(outputPath.toFile())) {
-            Git git = mergeResult(outputPath, gitMergeFolder);
+                Closeable output = () -> FileUtils.deleteDirectory(outputPath.toFile());
+                Git git = mergeResult(outputPath, gitMergeFolder)) {
             createCommit(commit, git);
             // create a tag with the current date
             CredentialsProvider credentialsProvider =
@@ -149,8 +171,13 @@ public class GitHubAction {
             // push the changes to the upstream repository
             gitPushResults(commands, git, credentialsProvider);
             releaseService.createRelease(githubToken);
-            git.close();
             commands.notice("Commit " + commit.getName() + " was pushed to GitHub and a release created\n");
+            return true;
+        } catch (Exception e) {
+            commands.error("Error while pushing result to GitHub");
+            commands.error(getErrorMessage(e));
+            logger.atError().withThrowable(e).log("Error while pushing result to GitHub");
+            return false;
         }
     }
 

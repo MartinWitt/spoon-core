@@ -10,23 +10,25 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
-public class RepoCheckout {
+public class RepoCheckout implements AutoCloseable {
 
     private static final Logger logger =
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private String repoURL;
     private Path outputPath;
 
-    @Nullable
+    @SuppressWarnings({"initialization", "NullAway"})
     private Git git;
+
+    private RevCommit revCommit;
 
     public RepoCheckout(String repoURL, Path outputPath, RevCommit revCommit) {
         this.repoURL = Objects.requireNonNull(repoURL);
         this.outputPath = Objects.requireNonNull(outputPath);
-        cloneRepo(Objects.requireNonNull(revCommit));
+        this.revCommit = revCommit;
     }
 
-    private void cloneRepo(RevCommit revCommit) {
+    private void cloneRepo() {
         try {
             git = Git.cloneRepository()
                     .setURI(repoURL)
@@ -38,6 +40,7 @@ public class RepoCheckout {
         }
     }
 
+    @Override
     public void close() {
         if (git != null) {
             git.close();
@@ -47,7 +50,10 @@ public class RepoCheckout {
     @Nullable
     public RevCommit getCurrentCommit() {
         if (git == null) {
-            return null;
+            cloneRepo();
+            if (git == null) {
+                return null;
+            }
         }
         try {
             return git.log().call().iterator().next();
