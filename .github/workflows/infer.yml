@@ -1,0 +1,22 @@
+name: FB-Infer
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+      - 'releases/*'
+
+jobs:
+  run-infer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+      - name : run infer action
+        uses: docker://ghcr.io/martinwitt/infer-train:master
+        with:
+            build-command: "gradle compileJava"
+            use-annotations: "true"
