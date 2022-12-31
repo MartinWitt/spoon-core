@@ -1,5 +1,6 @@
 package io.github.martinwitt.spoonrebuilder.generics;
 
+import io.github.martinwitt.spoonrebuilder.spoon.SpoonUtils;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -50,7 +51,7 @@ public class GenericReferenceRemover extends AbstractProcessor<CtTypeReference<?
                             },
                             () -> {
                                 if (reference.getParent() instanceof CtTypeParameter tp) {
-                                    tp.setSuperclass(null);
+                                    SpoonUtils.removeSupertype(tp);
                                 } else if (reference.getParent() instanceof CtMethod<?> m && m.getType() == reference) {
                                     reference.replace(
                                             reference.getFactory().Type().objectType());
