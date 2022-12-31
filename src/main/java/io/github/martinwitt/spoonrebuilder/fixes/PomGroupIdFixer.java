@@ -30,7 +30,7 @@ public class PomGroupIdFixer {
         });
     }
 
-    private boolean isPom(Path f) {
-        return f.getFileName().toString().equals("pom.xml");
+    private boolean isPom(Path path) {
+        return path.getFileName() != null && path.getFileName().toString().equals("pom.xml");
     }
 }

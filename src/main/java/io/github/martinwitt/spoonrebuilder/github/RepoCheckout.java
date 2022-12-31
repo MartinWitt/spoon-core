@@ -16,6 +16,8 @@ public class RepoCheckout {
             LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private String repoURL;
     private Path outputPath;
+
+    @Nullable
     private Git git;
 
     public RepoCheckout(String repoURL, Path outputPath, RevCommit revCommit) {
@@ -37,11 +39,16 @@ public class RepoCheckout {
     }
 
     public void close() {
-        git.close();
+        if (git != null) {
+            git.close();
+        }
     }
 
     @Nullable
     public RevCommit getCurrentCommit() {
+        if (git == null) {
+            return null;
+        }
         try {
             return git.log().call().iterator().next();
         } catch (GitAPIException e) {

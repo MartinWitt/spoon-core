@@ -28,6 +28,6 @@ public record FileFixer(Function<String, String> function) implements Consumer<P
     }
 
     private boolean isJavaFile(Path path) {
-        return path.getFileName().toString().endsWith("java");
+        return path.getFileName() != null && path.getFileName().toString().endsWith("java");
     }
 }
