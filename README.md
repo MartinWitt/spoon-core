@@ -59,7 +59,7 @@ dependencies {
 </dependency>
 ```
 ## License
-The code is licensed under the [MIT License]((https://opensource.org/licenses/MIT).
+The code is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 Spoon is licensed under the [CeCILL-C License](https://github.com/INRIA/spoon/blob/master/LICENSE-CECILL-C.txt) or  [MIT License](https://github.com/INRIA/spoon/blob/master/LICENSE-MIT.txt) at your option. SPDX-License-Identifier: (MIT OR CECILL-C).
 Therefore, these binaries are licensed under the same licenses as Spoon.
 ## SniperPrinting Fixes
