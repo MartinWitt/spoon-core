@@ -21,7 +21,7 @@ dependencies {
 	implementation 'org.apache.maven:maven-embedder:3.8.7'
 	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
 	// implementation 'io.quarkiverse.jgit:quarkus-jgit:2.3.0'
-	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.15.2.Final'
+	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.15.3.Final'
 	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.313.1'
 	implementation(enforcedPlatform('io.quarkus:quarkus-bom:2.15.2.Final'))
 	implementation 'io.quarkiverse.githubaction:quarkus-github-action:0.9.2'
