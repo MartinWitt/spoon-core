@@ -900,7 +900,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(AND_AND_Expression and_and_Expression, BlockScope scope) {
 			CtBinaryOperator op = factory.Core().createBinaryOperator();
-			op.setKind(getBinaryOperatorKind((and_and_Expression.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT));
+			op.setKind(getBinaryOperatorKind((and_and_Expression.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorMASK) >> org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorSHIFT));
 			context.enter(op, and_and_Expression);
 			return true;
 		}
@@ -1015,7 +1015,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 
 		@Override
 		public boolean visit(Assignment assignment, BlockScope scope) {
-			context.enter(factory.Core().createAssignment().setImplicit((assignment.bits & ASTNode.IsImplicit) != 0), assignment);
+			context.enter(factory.Core().createAssignment().setImplicit((assignment.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.IsImplicit) != 0), assignment);
 			return true;
 		}
 
@@ -1030,7 +1030,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(BinaryExpression binaryExpression, BlockScope scope) {
 			CtBinaryOperator op = factory.Core().createBinaryOperator();
-			op.setKind(getBinaryOperatorKind((binaryExpression.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT));
+			op.setKind(getBinaryOperatorKind((binaryExpression.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorMASK) >> org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorSHIFT));
 			context.enter(op, binaryExpression);
 			return true;
 		}
@@ -1100,7 +1100,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 			m.setDefaultMethod(methodDeclaration.isDefaultMethod());
 			context.enter(m, methodDeclaration);
 			// Create block
-			if (!methodDeclaration.isAbstract() && (methodDeclaration.modifiers & ClassFileConstants.AccNative) == 0) {
+			if (!methodDeclaration.isAbstract() && (methodDeclaration.modifiers & org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants.AccNative) == 0) {
 				context.enter(getFactory().Core().createBlock(), methodDeclaration);
 				context.exit(methodDeclaration);
 			}
@@ -1185,7 +1185,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(EqualExpression equalExpression, BlockScope scope) {
 			CtBinaryOperator op = factory.Core().createBinaryOperator();
-			op.setKind(getBinaryOperatorKind((equalExpression.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT));
+			op.setKind(getBinaryOperatorKind((equalExpression.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorMASK) >> org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorSHIFT));
 			context.enter(op, equalExpression);
 			return true;// do nothing by default, keep traversing
 
@@ -1422,7 +1422,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(OR_OR_Expression or_or_Expression, BlockScope scope) {
 			CtBinaryOperator op = factory.Core().createBinaryOperator();
-			op.setKind(getBinaryOperatorKind((or_or_Expression.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT));
+			op.setKind(getBinaryOperatorKind((or_or_Expression.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorMASK) >> org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorSHIFT));
 			context.enter(op, or_or_Expression);
 			return true;
 		}
@@ -1463,10 +1463,10 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(PostfixExpression postfixExpression, BlockScope scope) {
 			CtUnaryOperator op = factory.Core().createUnaryOperator();
-			if (postfixExpression.operator == OperatorIds.PLUS) {
+			if (postfixExpression.operator == org.eclipse.jdt.internal.compiler.ast.OperatorIds.PLUS) {
 				op.setKind(UnaryOperatorKind.POSTINC);
 			}
-			if (postfixExpression.operator == OperatorIds.MINUS) {
+			if (postfixExpression.operator == org.eclipse.jdt.internal.compiler.ast.OperatorIds.MINUS) {
 				op.setKind(UnaryOperatorKind.POSTDEC);
 			}
 			context.enter(op, postfixExpression);
@@ -1476,10 +1476,10 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(PrefixExpression prefixExpression, BlockScope scope) {
 			CtUnaryOperator op = factory.Core().createUnaryOperator();
-			if (prefixExpression.operator == OperatorIds.PLUS) {
+			if (prefixExpression.operator == org.eclipse.jdt.internal.compiler.ast.OperatorIds.PLUS) {
 				op.setKind(UnaryOperatorKind.PREINC);
 			}
-			if (prefixExpression.operator == OperatorIds.MINUS) {
+			if (prefixExpression.operator == org.eclipse.jdt.internal.compiler.ast.OperatorIds.MINUS) {
 				op.setKind(UnaryOperatorKind.PREDEC);
 			}
 			context.enter(op, prefixExpression);
@@ -1797,7 +1797,7 @@ public class JDTTreeBuilder extends ASTVisitor {
 		@Override
 		public boolean visit(UnaryExpression unaryExpression, BlockScope scope) {
 			CtUnaryOperator op = factory.Core().createUnaryOperator();
-			op.setKind(getUnaryOperator((unaryExpression.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT));
+			op.setKind(getUnaryOperator((unaryExpression.bits & org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorMASK) >> org.eclipse.jdt.internal.compiler.ast.ASTNode.OperatorSHIFT));
 			context.enter(op, unaryExpression);
 			return true;
 		}
