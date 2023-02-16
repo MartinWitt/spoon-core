@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu Feb 16 00:27:51 UTC 2023
+jsch.agentproxy.pageant-0.0.9.jar>central=
+jsch.agentproxy.pageant-0.0.9.pom>central=
