@@ -33,7 +33,7 @@ dependencies {
 	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 	implementation 'com.google.errorprone:error_prone_annotations:2.18.0'
 	errorprone "com.google.errorprone:error_prone_core:2.18.0"
-	implementation group: 'org.checkerframework', name: 'checker-qual', version: '3.30.0'
+	implementation group: 'org.checkerframework', name: 'checker-qual', version: '3.31.0'
 }
 
 tasks.withType(JavaCompile).configureEach {
