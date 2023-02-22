@@ -39,7 +39,7 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 
 	@Override
 	public <T> void visitClass(Class<T> clazz) {
-		if (clazz.getPackage() != null) {
+		if (isTopLevelType(clazz)) {
 			visitPackage(clazz.getPackage());
 		}
 		try {
@@ -125,7 +125,7 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 	@Override
 	public <T> void visitInterface(Class<T> clazz) {
 		assert clazz.isInterface();
-		if (clazz.getPackage() != null) {
+		if (isTopLevelType(clazz)) {
 			visitPackage(clazz.getPackage());
 		}
 		try {
@@ -182,7 +182,7 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 	@Override
 	public <T> void visitEnum(Class<T> clazz) {
 		assert clazz.isEnum();
-		if (clazz.getPackage() != null) {
+		if (isTopLevelType(clazz)) {
 			visitPackage(clazz.getPackage());
 		}
 		try {
@@ -256,7 +256,7 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 	@Override
 	public <T extends Annotation> void visitAnnotationClass(Class<T> clazz) {
 		assert clazz.isAnnotation();
-		if (clazz.getPackage() != null) {
+		if (isTopLevelType(clazz)) {
 			visitPackage(clazz.getPackage());
 		}
 		try {
@@ -338,7 +338,13 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 		if (parameter.isImplicit()) {
 			return true;
 		}
-		// best effort fallback
+		// best effort fallback for the implicit enclosing class parameter in non-static inner class constructors
+
+		// static inner classes have no implicit parameter
+		if (Modifier.isStatic(constructor.getDeclaringClass().getModifiers())) {
+			return false;
+		}
+
 		return isFirstParameter && parameter.getType() == constructor.getDeclaringClass().getEnclosingClass();
 	}
 
@@ -487,7 +493,7 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 
 	@Override
 	public <T> void visitTypeReference(CtRole role, Class<T> clazz) {
-		if (clazz.getPackage() != null && clazz.getEnclosingClass() == null) {
+		if (isTopLevelType(clazz)) {
 			visitPackage(clazz.getPackage());
 		}
 		if (clazz.getEnclosingClass() != null) {
@@ -584,6 +590,9 @@ class JavaReflectionVisitorImpl implements JavaReflectionVisitor {
 		}
 	}
 
+	private static boolean isTopLevelType(Class<?> clazz) {
+		return clazz.getEnclosingClass() == null && clazz.getPackage() != null;
+	}
 
 	private static Class<?> getRecordClass() {
 		try {
