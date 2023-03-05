@@ -92,7 +92,7 @@ abstract class LiteralHelper {
 			}
 			StringBuilder sb = new StringBuilder(10);
 			sb.append('\'');
-			appendCharLiteral(sb, (Character) literal.getValue(), mayContainsSpecialCharacter);
+			appendCharLiteral(sb, (Character) literal.getValue(), mayContainsSpecialCharacter, false);
 			sb.append('\'');
 			return sb.toString();
 		} else if (literal.getValue() instanceof String) {
@@ -113,7 +113,7 @@ abstract class LiteralHelper {
 		}
 	}
 
-	static void appendCharLiteral(StringBuilder sb, Character c, boolean mayContainsSpecialCharacter) {
+	static void appendCharLiteral(StringBuilder sb, Character c, boolean mayContainsSpecialCharacter, boolean isInsideString) {
 		if (!mayContainsSpecialCharacter) {
 			sb.append(c);
 		} else {
@@ -137,7 +137,11 @@ abstract class LiteralHelper {
 					sb.append("\\\""); //$NON-NLS-1$
 					break;
 				case '\'':
-					sb.append("\\'"); //$NON-NLS-1$
+					if (isInsideString) {
+						sb.append("'"); //$NON-NLS-1$
+					} else {
+						sb.append("\\'"); //$NON-NLS-1$
+					}
 					break;
 				case '\\': // take care not to display the escape as a potential
 					// real char
@@ -155,7 +159,7 @@ abstract class LiteralHelper {
 		} else {
 			StringBuilder sb = new StringBuilder(value.length() * 2);
 			for (int i = 0; i < value.length(); i++) {
-				appendCharLiteral(sb, value.charAt(i), mayContainsSpecialCharacter);
+				appendCharLiteral(sb, value.charAt(i), mayContainsSpecialCharacter, true);
 			}
 			return sb.toString();
 		}
