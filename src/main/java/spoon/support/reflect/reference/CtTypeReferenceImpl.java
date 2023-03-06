@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import static spoon.reflect.ModelElementContainerDefaultCapacities.TYPE_TYPE_PARAMETERS_CONTAINER_DEFAULT_CAPACITY;
 import static spoon.reflect.path.CtRole.DECLARING_TYPE;
 import static spoon.reflect.path.CtRole.IS_SHADOW;
@@ -155,12 +156,14 @@ public class CtTypeReferenceImpl extends CtReferenceImpl implements CtTypeRefere
 		if (isArray()) {
 			CtTypeReference componentTypeReference = convertToComponentType();
 			if (componentTypeReference.isPrimitive()) {
-				return getPrimitiveType(componentTypeReference).map(this::arrayType).orElseThrow(() -> new SpoonException("Cant find primitive type: " + componentTypeReference));
+				return getPrimitiveType(componentTypeReference)
+					.map(this::asArrayTypeWithOurDimensions)
+					.orElseThrow(() -> new SpoonException("Cant find primitive type: " + componentTypeReference));
 			}
 			typeReference = componentTypeReference;
 		}
 		Class<?> actualClass = getClassFromThreadLocalCacheOrLoad(typeReference);
-		return isArray() ? arrayType(actualClass) : actualClass;
+		return isArray() ? asArrayTypeWithOurDimensions(actualClass) : actualClass;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,7 +179,7 @@ public class CtTypeReferenceImpl extends CtReferenceImpl implements CtTypeRefere
 	 * @return  the component type of the type reference.
 	 */
 	private CtTypeReference convertToComponentType() {
-		if (this.getQualifiedName().indexOf("[") == -1) {
+		if (!this.getQualifiedName().contains("[")) {
 			return this;
 		}
 		return getFactory().createReference(this.getQualifiedName().substring(0, this.getQualifiedName().indexOf("[")));
@@ -209,8 +212,11 @@ public class CtTypeReferenceImpl extends CtReferenceImpl implements CtTypeRefere
 	 * @return  the array type.
 	 */
 	@SuppressWarnings("unchecked")
-	private <R> Class<R> arrayType(Class<R> clazz) {
-			return (Class<R>) Array.newInstance(clazz, 0).getClass();
+	private <R> Class<R> asArrayTypeWithOurDimensions(Class<R> clazz) {
+		String simpleName = getSimpleName();
+		int dimensionCount = (simpleName.length() - simpleName.indexOf('[')) / 2;
+		int[] dimensions = new int[dimensionCount];
+		return (Class<R>) Array.newInstance(clazz, dimensions).getClass();
 	}
 
 	@Override
