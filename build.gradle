@@ -19,7 +19,7 @@ dependencies {
 
 	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0'
 	implementation 'org.apache.maven:maven-embedder:3.9.0'
-	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
+	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.5.0.202303070854-r'
 	// implementation 'io.quarkiverse.jgit:quarkus-jgit:2.3.0'
 	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.16.4.Final'
 	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.314.0'
