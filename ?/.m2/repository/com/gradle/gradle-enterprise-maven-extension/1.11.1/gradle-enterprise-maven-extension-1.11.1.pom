@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.gradle</groupId>
+  <artifactId>gradle-enterprise-maven-extension</artifactId>
+  <version>1.11.1</version>
+  <name>Gradle Enterprise Maven Extension</name>
+  <description>Maven extension for Gradle Enterprise installations that provides build insights and build caching for Maven builds. Alternatively, build insights can be captured and viewed for free at scans.gradle.com. See https://gradle.com for more information on Gradle Enterprise.</description>
+  <url>https://docs.gradle.com/enterprise/maven-extension</url>
+  <licenses>
+    <license>
+      <name>Gradle Terms of Service</name>
+      <url>https://gradle.com/legal/terms-of-service</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>The Gradle team</name>
+      <organization>Gradle Inc.</organization>
+      <organizationUrl>https://gradle.com</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>https://gradle.com</connection>
+    <developerConnection>https://gradle.com</developerConnection>
+    <url>https://gradle.com</url>
+  </scm>
+</project>
