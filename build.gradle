@@ -24,7 +24,7 @@ dependencies {
 	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.16.6.Final'
 	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.314.0'
 	implementation(enforcedPlatform('io.quarkus:quarkus-bom:2.16.6.Final'))
-	implementation 'io.quarkiverse.githubaction:quarkus-github-action:0.9.2'
+	implementation 'io.quarkiverse.githubaction:quarkus-github-action:1.0.2'
 	implementation 'io.quarkus:quarkus-junit5'
 	implementation("org.jboss.logmanager:log4j2-jboss-logmanager")
 
