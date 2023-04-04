@@ -5,7 +5,7 @@ plugins {
 	id "org.kordamp.gradle.jandex" version "1.1.0"
 	id "net.ltgt.errorprone" version "3.0.1"
 	id("maven-publish")
-	id 'org.checkerframework' version '0.6.25'
+	id 'org.checkerframework' version '0.6.26'
 }
 
 repositories {
