@@ -239,7 +239,7 @@ public class TypeAdaptor {
 			newParameter.setType(adaptType(inputMethod.getParameters().get(i).getType()));
 		}
 
-		Set<CtTypeReference> newThrownTypes = clonedMethod.getThrownTypes()
+		Set<CtTypeReference> newThrownTypes = inputMethod.getThrownTypes()
 			.stream()
 			.map(this::adaptType)
 			.map(it -> ((CtTypeReference) ( it)))
