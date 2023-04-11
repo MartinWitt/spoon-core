@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Apr 11 01:40:20 UTC 2023
+jacoco-maven-plugin-0.8.9.jar>central=
+jacoco-maven-plugin-0.8.9.pom>central=
