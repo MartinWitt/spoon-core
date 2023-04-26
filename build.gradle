@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
 	// Use JUnit Jupiter for testing.
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
 
 	implementation 'fr.inria.gforge.spoon:spoon-core:10.3.0'
 	implementation 'org.apache.maven:maven-embedder:3.9.1'
