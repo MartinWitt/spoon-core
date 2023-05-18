@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.reflect.factory;
 
@@ -596,16 +596,31 @@ public class CodeFactory extends SubFactory {
 		if (originalClass == null) {
 			return null;
 		}
-		CtTypeReference typeReference = factory.Core().<T>createTypeReference();
-		typeReference.setSimpleName(originalClass.getSimpleName());
-		if (originalClass.isPrimitive()) {
-			return typeReference;
+		int arrayDimensionCount = 0;
+		Class<?> currentClass = originalClass;
+		while (currentClass.isArray()) {
+			currentClass = currentClass.getComponentType();
+			arrayDimensionCount++;
 		}
-		if (originalClass.getDeclaringClass() != null) {
-			// the inner class reference does not have package
-			return typeReference.setDeclaringType(createCtTypeReference(originalClass.getDeclaringClass()));
+		CtTypeReference typeReference = factory.Core().createTypeReference();
+		if (currentClass.isAnonymousClass()) {
+			int end = currentClass.getName().lastIndexOf('$');
+			typeReference.setSimpleName(currentClass.getName().substring(end + 1));
+		} else {
+			typeReference.setSimpleName(currentClass.getSimpleName());
 		}
-		return typeReference.setPackage(createCtPackageReference(originalClass.getPackage()));
+		if (currentClass.getEnclosingClass() != null) {
+			typeReference.setDeclaringType(createCtTypeReference(currentClass.getEnclosingClass()));
+		}
+		if (currentClass.getPackage() != null) {
+			typeReference.setPackage(createCtPackageReference(currentClass.getPackage()));
+		}
+
+		if (arrayDimensionCount > 0) {
+			typeReference = ((CtTypeReference) (factory.createArrayReference(typeReference, arrayDimensionCount)));
+		}
+
+		return typeReference;
 	}
 
 	/**
@@ -724,7 +739,7 @@ public class CodeFactory extends SubFactory {
 	/**
 	 * Creates a javadoc tag
 	 *
-	 * @param content The content of the javadoc tag with a possible paramater
+	 * @param content The content of the javadoc tag with a possible parameter
 	 * @param type The tag type
 	 * @return a new CtJavaDocTag
 	 */
@@ -752,7 +767,7 @@ public class CodeFactory extends SubFactory {
 	/**
 	 * Creates a javadoc tag
 	 *
-	 * @param content The content of the javadoc tag with a possible paramater
+	 * @param content The content of the javadoc tag with a possible parameter
 	 * @param type The tag type
 	 * @param realName The real name of the tag
 	 * @return a new CtJavaDocTag
