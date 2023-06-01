@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.compiler.jdt;
 
@@ -686,16 +686,15 @@ public class ParentExiter extends CtInheritanceScanner {
 
 	@Override
 	public void visitCtForEach(CtForEach foreach) {
-		if (foreach.getVariable() == null && child instanceof CtVariable) {
+		if (foreach.getVariable() == null && child instanceof CtLocalVariable) {
 			foreach.setVariable(((CtLocalVariable) (child)));
-			return;
 		} else {
 			if (foreach.getExpression() == null && child instanceof CtExpression) {
 				foreach.setExpression(((CtExpression) (child)));
-				return;
+			} else {
+				super.visitCtForEach(foreach);
 			}
 		}
-		super.visitCtForEach(foreach);
 	}
 
 	@Override
