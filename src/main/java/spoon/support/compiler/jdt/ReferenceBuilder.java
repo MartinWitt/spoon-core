@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.compiler.jdt;
 
@@ -453,6 +453,12 @@ public class ReferenceBuilder {
 
 		// original() method returns a result not null when the current method is generic.
 		if (exec.original() != null) {
+			// if polymorphic, the original return type differs from the actual return type
+			//  therefore we use the original one here
+			//  see https://github.com/INRIA/spoon/issues/4863
+			if (exec.isPolymorphic()) {
+				ref.setType(getTypeReference(exec.original().returnType));
+			}
 			final List<CtTypeReference> parameters = new ArrayList<>(exec.original().parameters.length);
 			for (TypeBinding b : exec.original().parameters) {
 				parameters.add(getTypeReference(b, true));
@@ -1168,26 +1174,25 @@ public class ReferenceBuilder {
 		return bindingCache.get(b).clone();
 	}
 
-	<T> CtFieldReference getVariableReference(FieldBinding varbin) {
+	<T> CtFieldReference getVariableReference(TypeBinding type, FieldBinding varbin) {
 		CtFieldReference ref = this.jdtTreeBuilder.getFactory().Core().createFieldReference();
 		if (varbin == null) {
 			return ref;
 		}
 		ref.setSimpleName(new String(varbin.name));
 		ref.setType(this.<T>getTypeReference(varbin.type));
-
-		if (varbin.declaringClass != null) {
-			ref.setDeclaringType(getTypeReference(varbin.declaringClass));
+		if (type != null && type.isArrayType()) {
+			ref.setDeclaringType(getTypeReference(type));
 		} else {
-			ref.setDeclaringType(ref.getType() == null ? null : ref.getType().clone());
+			ref.setDeclaringType(getTypeReference(varbin.declaringClass));
 		}
 		ref.setFinal(varbin.isFinal());
 		ref.setStatic((varbin.modifiers & ClassFileConstants.AccStatic) != 0);
 		return ref;
 	}
 
-	<T> CtFieldReference getVariableReference(FieldBinding fieldBinding, char[] tokens) {
-		final CtFieldReference ref = getVariableReference(fieldBinding);
+	<T> CtFieldReference getVariableReference(TypeBinding type, FieldBinding fieldBinding, char[] tokens) {
+		final CtFieldReference ref = getVariableReference(type, fieldBinding);
 		if (fieldBinding != null) {
 			return ref;
 		}
@@ -1199,7 +1204,7 @@ public class ReferenceBuilder {
 	<T> CtVariableReference getVariableReference(VariableBinding varbin) {
 
 		if (varbin instanceof FieldBinding) {
-			return getVariableReference((FieldBinding) varbin);
+			return getVariableReference(((FieldBinding) varbin).declaringClass, (FieldBinding) varbin);
 		} else if (varbin instanceof LocalVariableBinding) {
 			final LocalVariableBinding localVariableBinding = (LocalVariableBinding) varbin;
 			if (localVariableBinding.declaration instanceof Argument && localVariableBinding.declaringScope instanceof MethodScope) {
