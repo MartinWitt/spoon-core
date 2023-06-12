@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support;
 
@@ -415,25 +415,20 @@ private transient  ClassLoader inputClassloader;
 			final URL[] urls = ((URLClassLoader) (aClassLoader)).getURLs();
 			if (urls != null && urls.length > 0) {
 				// Check that the URLs are only file URLs
-				boolean onlyFileURLs = true;
 				for (URL url : urls) {
 					if (!"file".equals(url.getProtocol())) {
-						onlyFileURLs = false;
+						throw new SpoonException("Spoon does not support a URLClassLoader containing other resources than local file.");
 					}
 				}
-				if (onlyFileURLs) {
-					List<String> classpath = new ArrayList<>();
-					for (URL url : urls) {
-						try {
-							classpath.add(Path.of(url.toURI()).toAbsolutePath().toString());
-						} catch (URISyntaxException | FileSystemNotFoundException | IllegalArgumentException ignored) {
-							classpath.add(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8));
-						}
+				List<String> classpath = new ArrayList<>();
+				for (URL url : urls) {
+					try {
+						classpath.add(Path.of(url.toURI()).toAbsolutePath().toString());
+					} catch (URISyntaxException | FileSystemNotFoundException | IllegalArgumentException ignored) {
+						classpath.add(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8));
 					}
-					setSourceClasspath(classpath.toArray(new String[0]));
-				} else {
-					throw new SpoonException("Spoon does not support a URLClassLoader containing other resources than local file.");
 				}
+				setSourceClasspath(classpath.toArray(new String[0]));
 			}
 		}
 		this.classloader = aClassLoader;
