@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.compiler.jdt;
 
@@ -284,13 +284,13 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private <T> boolean hasChildEqualsToDefaultValue(CtVariable ctVariable) {
-		if (jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof AnnotationMethodDeclaration) {
-			final AnnotationMethodDeclaration parent = (AnnotationMethodDeclaration) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		if (jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof AnnotationMethodDeclaration) {
+			final AnnotationMethodDeclaration parent = (AnnotationMethodDeclaration) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 			// Default value is equals to the jdt child.
 			return parent.defaultValue != null && getFinalExpressionFromCast(parent.defaultValue).equals(childJDT) &&
 					 !child.equals(ctVariable.getDefaultExpression());
 		}
-		final AbstractVariableDeclaration parent = (AbstractVariableDeclaration) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final AbstractVariableDeclaration parent = (AbstractVariableDeclaration) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Default value is equals to the jdt child.
 		return parent.initialization != null && getFinalExpressionFromCast(parent.initialization).equals(childJDT) &&
 				 !child.equals(ctVariable.getDefaultExpression());
@@ -339,7 +339,7 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private <T> boolean hasChildEqualsToType(CtMethod ctMethod) {
-		final MethodDeclaration parent = (MethodDeclaration) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final MethodDeclaration parent = (MethodDeclaration) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Return type is equals to the jdt child.
 		return parent.returnType != null && parent.returnType.equals(childJDT) &&
 				 !child.equals(ctMethod.getType());
@@ -355,7 +355,7 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private <T> boolean hasChildEqualsToDefaultValue(CtAnnotationMethod ctAnnotationMethod) {
-		final AnnotationMethodDeclaration parent = (AnnotationMethodDeclaration) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final AnnotationMethodDeclaration parent = (AnnotationMethodDeclaration) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Default value is equals to the jdt child.
 		return parent.defaultValue != null && parent.defaultValue.equals(childJDT) &&
 				 !child.equals(ctAnnotationMethod.getDefaultExpression());
@@ -458,7 +458,7 @@ public class ParentExiter extends CtInheritanceScanner {
 					operator.setRightHandOperand(((CtExpression) (child)));
 					return;
 				} else {
-					if (jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof StringLiteralConcatenation) {
+					if (jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof StringLiteralConcatenation) {
 						CtBinaryOperator op = operator.getFactory().Core().createBinaryOperator();
 						op.setKind(BinaryOperatorKind.PLUS);
 						op.setLeftHandOperand(operator.getLeftHandOperand());
@@ -494,7 +494,7 @@ public class ParentExiter extends CtInheritanceScanner {
 
 	@Override
 	public <E> void visitCtCase(CtCase caseStatement) {
-		final ASTNode node = jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ASTNode node = jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		if (node instanceof CaseStatement) {
 			caseStatement.setCaseKind(((CaseStatement) (node)).isExpr ? CaseKind.ARROW : CaseKind.COLON);
 		}
@@ -533,7 +533,7 @@ public class ParentExiter extends CtInheritanceScanner {
 
 	@Override
 	public <T> void visitCtCatchVariable(CtCatchVariable e) {
-		if (jdtTreeBuilder.getContextBuilder().stack.peekFirst().node instanceof UnionTypeReference) {
+		if (jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof UnionTypeReference) {
 			e.addMultiType(((CtTypeReference) (child)));
 			return;
 		}
@@ -645,10 +645,10 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private boolean isContainedInForInit() {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ForStatement)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ForStatement)) {
 			return false;
 		}
-		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		if (parent.initializations == null) {
 			return false;
 		}
@@ -661,10 +661,10 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private boolean isContainedInForUpdate() {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ForStatement)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ForStatement)) {
 			return false;
 		}
-		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		if (parent.increments == null) {
 			return false;
 		}
@@ -677,25 +677,24 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private boolean isContainedInForCondition() {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ForStatement)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ForStatement)) {
 			return false;
 		}
-		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ForStatement parent = (ForStatement) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		return parent.condition != null && parent.condition.equals(childJDT);
 	}
 
 	@Override
 	public void visitCtForEach(CtForEach foreach) {
-		if (foreach.getVariable() == null && child instanceof CtVariable) {
+		if (foreach.getVariable() == null && child instanceof CtLocalVariable) {
 			foreach.setVariable(((CtLocalVariable) (child)));
-			return;
 		} else {
 			if (foreach.getExpression() == null && child instanceof CtExpression) {
 				foreach.setExpression(((CtExpression) (child)));
-				return;
+			} else {
+				super.visitCtForEach(foreach);
 			}
 		}
-		super.visitCtForEach(foreach);
 	}
 
 	@Override
@@ -824,20 +823,20 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private <T> boolean hasChildEqualsToQualification(CtInvocation ctInvocation) {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ExplicitConstructorCall)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ExplicitConstructorCall)) {
 			return false;
 		}
-		final ExplicitConstructorCall parent = (ExplicitConstructorCall) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ExplicitConstructorCall parent = (ExplicitConstructorCall) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// qualification is equals to the jdt child.
 		return parent.qualification != null && getFinalExpressionFromCast(parent.qualification).equals(childJDT) &&
 				 !child.equals(ctInvocation.getTarget());
 	}
 
 	private <T> boolean hasChildEqualsToReceiver(CtInvocation ctInvocation) {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof MessageSend)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof MessageSend)) {
 			return false;
 		}
-		final MessageSend parent = (MessageSend) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final MessageSend parent = (MessageSend) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Receiver is equals to the jdt child.
 		return parent.receiver != null && getFinalExpressionFromCast(parent.receiver).equals(childJDT) &&
 				 !child.equals(ctInvocation.getTarget());
@@ -853,14 +852,14 @@ public class ParentExiter extends CtInheritanceScanner {
 	@Override
 	public <T> void visitCtNewArray(CtNewArray newArray) {
 		if (childJDT instanceof TypeReference && child instanceof CtTypeAccess) {
-			final ArrayAllocationExpression arrayAlloc = ((ArrayAllocationExpression) (jdtTreeBuilder.getContextBuilder().stack.peek().node));
+			final ArrayAllocationExpression arrayAlloc = ((ArrayAllocationExpression) (jdtTreeBuilder.getContextBuilder().getCurrentNode()));
 			newArray.setType(((CtArrayTypeReference) (jdtTreeBuilder.getFactory().Type().createArrayReference(((CtTypeAccess) (child)).getAccessedType(), arrayAlloc.dimensions.length))));
 		} else {
 			if (child instanceof CtExpression) {
 				if (isContainedInDimensionExpression()) {
 					newArray.addDimensionExpression(((CtExpression) (child)));
 				} else {
-					if (child instanceof CtNewArray && childJDT instanceof ArrayInitializer && jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ArrayAllocationExpression) {
+					if (child instanceof CtNewArray && childJDT instanceof ArrayInitializer && jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ArrayAllocationExpression) {
 						newArray.setElements(((CtNewArray) (child)).getElements());
 					} else {
 						newArray.addElement(((CtExpression) (child)));
@@ -871,10 +870,10 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private boolean isContainedInDimensionExpression() {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof ArrayAllocationExpression)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof ArrayAllocationExpression)) {
 			return false;
 		}
-		final ArrayAllocationExpression parent = (ArrayAllocationExpression) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final ArrayAllocationExpression parent = (ArrayAllocationExpression) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		if (parent.dimensions == null) {
 			return false;
 		}
@@ -909,17 +908,17 @@ public class ParentExiter extends CtInheritanceScanner {
 	}
 
 	private <T> boolean hasChildEqualsToEnclosingInstance(CtConstructorCall ctConstructorCall) {
-		if (!(jdtTreeBuilder.getContextBuilder().stack.peek().node instanceof QualifiedAllocationExpression)) {
+		if (!(jdtTreeBuilder.getContextBuilder().getCurrentNode() instanceof QualifiedAllocationExpression)) {
 			return false;
 		}
-		final QualifiedAllocationExpression parent = (QualifiedAllocationExpression) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final QualifiedAllocationExpression parent = (QualifiedAllocationExpression) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Enclosing instance is equals to the jdt child.
 		return parent.enclosingInstance != null && getFinalExpressionFromCast(parent.enclosingInstance).equals(childJDT) &&
 				 !child.equals(ctConstructorCall.getTarget());
 	}
 
 	private <T> boolean hasChildEqualsToType(CtConstructorCall ctConstructorCall) {
-		final AllocationExpression parent = (AllocationExpression) jdtTreeBuilder.getContextBuilder().stack.peek().node;
+		final AllocationExpression parent = (AllocationExpression) jdtTreeBuilder.getContextBuilder().getCurrentNode();
 		// Type is equals to the jdt child.
 		return parent.type != null && parent.type.equals(childJDT);
 	}
@@ -928,7 +927,7 @@ public class ParentExiter extends CtInheritanceScanner {
 	public <T> void visitCtNewClass(CtNewClass newClass) {
 		if (child instanceof CtClass) {
 			newClass.setAnonymousClass(((CtClass) (child)));
-			final QualifiedAllocationExpression node = ((QualifiedAllocationExpression) (jdtTreeBuilder.getContextBuilder().stack.peek().node));
+			final QualifiedAllocationExpression node = ((QualifiedAllocationExpression) (jdtTreeBuilder.getContextBuilder().getCurrentNode()));
 			final ReferenceBinding[] referenceBindings = (node.resolvedType == null) ? null : node.resolvedType.superInterfaces();
 			if (referenceBindings != null && referenceBindings.length > 0) {
 				// the interface of anonymous class is not printed so it must have no position
@@ -1118,7 +1117,7 @@ public class ParentExiter extends CtInheritanceScanner {
 					tryWithResource.addResource(((CtResource) (variableRef.getDeclaration().clone().setImplicit(true))));
 				} else {
 					// we have to find it manually
-					for (ASTPair pair : this.jdtTreeBuilder.getContextBuilder().stack) {
+					for (ASTPair pair : this.jdtTreeBuilder.getContextBuilder().getAllContexts()) {
 						final List<CtLocalVariable> variables = pair.element.getElements(new TypeFilter<>(spoon.reflect.code.CtLocalVariable.class));
 						for (CtLocalVariable v : variables) {
 							if (v.getSimpleName().equals(variableRef.getSimpleName())) {
