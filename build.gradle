@@ -31,7 +31,7 @@ dependencies {
 	// nullaway
 	annotationProcessor "com.uber.nullaway:nullaway:+"
 	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-	implementation 'com.google.errorprone:error_prone_annotations:2.19.1'
+	implementation 'com.google.errorprone:error_prone_annotations:2.20.0'
 	errorprone "com.google.errorprone:error_prone_core:2.19.1"
 	implementation group: 'org.checkerframework', name: 'checker-qual', version: '3.35.0'
 }
