@@ -1,6 +1,6 @@
 plugins {
 	id 'application'
-	id "io.quarkus" version "2.15.3.Final"
+	id "io.quarkus" version "3.2.0.CR1"
 	id "com.diffplug.spotless" version "6.13.0"
 	id "org.kordamp.gradle.jandex" version "1.1.0"
 	id "net.ltgt.errorprone" version "3.0.1"
@@ -16,16 +16,14 @@ repositories {
 dependencies {
 	// Use JUnit Jupiter for testing.
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
-
 	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0'
 	implementation 'org.apache.maven:maven-embedder:3.8.7'
 	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
-	// implementation 'io.quarkiverse.jgit:quarkus-jgit:2.3.0'
-	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.15.3.Final'
-	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.313.1'
-	implementation(enforcedPlatform('io.quarkus:quarkus-bom:2.15.3.Final'))
-	implementation 'io.quarkiverse.githubaction:quarkus-github-action:0.9.2'
-	implementation 'io.quarkus:quarkus-junit5'
+	implementation group: 'io.quarkus.arc', name: 'arc', version: '3.2.0.CR1'
+	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.314.1'
+	implementation(enforcedPlatform('io.quarkus:quarkus-bom:3.2.0.CR1'))
+	implementation 'io.quarkiverse.githubaction:quarkus-github-action:2.0.0.Alpha1'
+	testImplementation 'io.quarkus:quarkus-junit5'
 	implementation("org.jboss.logmanager:log4j2-jboss-logmanager")
 
 	// nullaway

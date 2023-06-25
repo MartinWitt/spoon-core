@@ -2,10 +2,10 @@ package io.github.martinwitt.spoonrebuilder.impl;
 
 import io.github.martinwitt.spoonrebuilder.api.BuildFailException;
 import io.github.martinwitt.spoonrebuilder.api.ResultChecker;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import javax.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

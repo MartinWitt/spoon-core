@@ -1,6 +1,7 @@
 package io.github.martinwitt.spoonrebuilder.impl;
 
 import io.github.martinwitt.spoonrebuilder.api.ReleaseService;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.StreamSupport;
-import javax.enterprise.context.ApplicationScoped;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
