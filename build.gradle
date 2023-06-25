@@ -1,7 +1,7 @@
 plugins {
 	id 'application'
-	id "io.quarkus" version "2.16.7.Final"
-	id "com.diffplug.spotless" version "6.19.0"
+	id "io.quarkus" version "3.2.0.CR1"
+	id "com.diffplug.spotless" version "6.13.0"
 	id "org.kordamp.gradle.jandex" version "1.1.0"
 	id "net.ltgt.errorprone" version "3.1.0"
 	id("maven-publish")
@@ -15,17 +15,15 @@ repositories {
 
 dependencies {
 	// Use JUnit Jupiter for testing.
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-
-	implementation 'fr.inria.gforge.spoon:spoon-core:10.3.0'
-	implementation 'org.apache.maven:maven-embedder:3.9.2'
-	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.6.0.202305301015-r'
-	// implementation 'io.quarkiverse.jgit:quarkus-jgit:2.3.0'
-	implementation group: 'io.quarkus.arc', name: 'arc', version: '2.16.7.Final'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0'
+	implementation 'org.apache.maven:maven-embedder:3.8.7'
+	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
+	implementation group: 'io.quarkus.arc', name: 'arc', version: '3.2.0.CR1'
 	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.314.1'
-	implementation(enforcedPlatform('io.quarkus:quarkus-bom:2.16.7.Final'))
-	implementation 'io.quarkiverse.githubaction:quarkus-github-action:0.9.2'
-	implementation 'io.quarkus:quarkus-junit5'
+	implementation(enforcedPlatform('io.quarkus:quarkus-bom:3.2.0.CR1'))
+	implementation 'io.quarkiverse.githubaction:quarkus-github-action:2.0.0.Alpha1'
+	testImplementation 'io.quarkus:quarkus-junit5'
 	implementation("org.jboss.logmanager:log4j2-jboss-logmanager")
 
 	// nullaway
