@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.compiler.jdt;
 
@@ -75,7 +75,7 @@ public class ContextBuilder {
 	/**
 	 * Stack of all parents elements
 	 */
-	Deque<ASTPair> stack = new ArrayDeque<>();
+	private final Deque<ASTPair> stack = new ArrayDeque<>();
 
 	private final JDTTreeBuilder jdtTreeBuilder;
 
@@ -130,6 +130,37 @@ public class ContextBuilder {
 		}
 	}
 
+	/**
+	 * @return all {@link ASTPair}s currently on the stack
+	 */
+	Iterable<ASTPair> getAllContexts() {
+		return stack;
+	}
+
+	/**
+	 * @return {@code true} if there are any elements on the stack
+	 */
+	boolean hasCurrentContext() {
+		return !stack.isEmpty();
+	}
+
+	/**
+	 *
+	 * @return the {@link CtElement} on the top of the stack
+	 * @throws NullPointerException if the stack is empty
+	 */
+	CtElement getCurrentElement() {
+		return stack.peek().element;
+	}
+
+	/**
+	 * @return the {@link ASTNode} on the top of the stack
+	 * @throws NullPointerException if the stack is empty
+	 */
+	ASTNode getCurrentNode() {
+		return stack.peek().node;
+	}
+
 	CtElement getContextElementOnLevel(int level) {
 		for (ASTPair pair : stack) {
 			if (level == 0) {
@@ -167,7 +198,7 @@ public class ContextBuilder {
 			// note: this happens when using the new try(vardelc) structure
 			this.jdtTreeBuilder.getLogger().error(
 					format("Could not find declaration for local variable %s at %s",
-							name, stack.peek().element.getPosition()));
+							name, getCurrentElement().getPosition()));
 		}
 		return localVariable;
 	}
@@ -181,7 +212,7 @@ public class ContextBuilder {
 			// note: this happens when using the new try(vardelc) structure
 			this.jdtTreeBuilder.getLogger().error(
 					format("Could not find declaration for catch variable %s at %s",
-							name, stack.peek().element.getPosition()));
+							name, getCurrentElement().getPosition()));
 		}
 		return catchVariable;
 	}
@@ -193,7 +224,7 @@ public class ContextBuilder {
 			// note: this can happen when identifier is not a variable name but e.g. a Type name.
 			this.jdtTreeBuilder.getLogger().debug(
 					format("Could not find declaration for variable %s at %s.",
-							name, stack.peek().element.getPosition()));
+							name, getCurrentElement().getPosition()));
 		}
 		return variable;
 	}
@@ -255,7 +286,11 @@ public class ContextBuilder {
 						if (name.equals(new String(fieldBinding.readableName()))) {
 							final String qualifiedNameOfParent = getNormalQualifiedName(referenceBinding);
 
-							final CtType parentOfField = (referenceBinding.isClass())
+							CtType parentOfField = typeFactory.get(qualifiedNameOfParent);
+							if (parentOfField != null) {
+								return ((U) (parentOfField.getField(name)));
+							}
+							parentOfField = (referenceBinding.isClass())
 									? classFactory.create(qualifiedNameOfParent)
 									: interfaceFactory.create(qualifiedNameOfParent);
 
