@@ -24,7 +24,7 @@ Current integrators:
     - Email: nicolas.harrand@gmail.com
 - Martin Monperrus [@monperrus](https://github.com/monperrus/)
     - Email: martin.monperrus@gnieh.org
-    - GPG fingerprint: [074F73B36D8DD649B132BAC18035014A2B7BFA92](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x074F73B36D8DD649B132BAC18035014A2B7BFA92)
+    - GPG fingerprint: [AF7B251DA8126C30896FAFF77D398AD45AEEEC93](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xAF7B251DA8126C30896FAFF77D398AD45AEEEC93)
 - Martin Wittlinger [@MartinWitt](https://github.com/MartinWitt)
     - Email: wittlinger.martin@gmail.com
 - Hannes Greule [@SirYwell](https://github.com/SirYwell)
@@ -70,7 +70,7 @@ Guidelines for feature pull-requests:
 Other kinds of pull-requests:
 
 1. Pull requests with passing test cases only are welcome, they specify previously unspecified behavior and are prefixed by "test:".
-1. Pull requests with failing test cases only are welcome, they reproduce bugs and are very useful for maintainers to fix them. You can prevent failing the CI with adding the annotation `@GitHubIssue(issueNumber = <your-issue-number>, fixed = false)`. If you fix a test case with such an annotation mark the test case as fixed with `@GitHubIssue(issueNumber = <your-issue-number>, fixed = true)`.
+2. Pull requests with failing test cases only are welcome, they reproduce bugs and are very useful for maintainers to fix them. You can prevent failing the CI with adding the annotation `@GitHubIssue(issueNumber = <your-issue-number>, fixed = false)`. If you fix a test case with such an annotation mark the test case as fixed with `@GitHubIssue(issueNumber = <your-issue-number>, fixed = true)`.
 1. "Chore" pull-requests modify the CI setup.
 1. If there is no activity on an issue or on a pull request for 3 months it's closed.
 
