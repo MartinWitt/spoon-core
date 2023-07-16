@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.reflect.factory;
 
@@ -16,7 +16,6 @@ import spoon.SpoonException;
 import spoon.reflect.declaration.CtModule;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtPackageDeclaration;
-import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtPackageReference;
 
 
@@ -155,9 +154,6 @@ public class PackageFactory extends SubFactory {
 	 * @return a found package or null
 	 */
 	public CtPackage get(String qualifiedName) {
-		if (qualifiedName.contains(CtType.INNERTTYPE_SEPARATOR)) {
-			throw new RuntimeException("Invalid package name " + qualifiedName);
-		}
 
 		// Find package with the most contained types. If a module exports package "foo.bar" and the
 		// other "foo.bar.baz", *both modules* will contain a "foo.bar" package in spoon. As
