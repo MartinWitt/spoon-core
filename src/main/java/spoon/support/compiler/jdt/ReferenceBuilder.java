@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.compiler.jdt;
 
@@ -60,6 +60,7 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
+import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.VariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.VoidTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
@@ -90,7 +91,6 @@ import spoon.support.reflect.CtExtendedModifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -453,6 +453,12 @@ public class ReferenceBuilder {
 
 		// original() method returns a result not null when the current method is generic.
 		if (exec.original() != null) {
+			// if polymorphic, the original return type differs from the actual return type
+			//  therefore we use the original one here
+			//  see https://github.com/INRIA/spoon/issues/4863
+			if (exec.isPolymorphic()) {
+				ref.setType(getTypeReference(exec.original().returnType));
+			}
 			final List<CtTypeReference> parameters = new ArrayList<>(exec.original().parameters.length);
 			for (TypeBinding b : exec.original().parameters) {
 				parameters.add(getTypeReference(b, true));
@@ -667,14 +673,14 @@ public class ReferenceBuilder {
 	 * See #3360 for details.
 	 */
 	private void tryRecoverTypeArguments(CtTypeReference type) {
-		final Deque<ASTPair> stack = jdtTreeBuilder.getContextBuilder().stack;
-		if (stack.peek() == null || !(stack.peek().node instanceof AllocationExpression)) {
+		ContextBuilder contextBuilder = jdtTreeBuilder.getContextBuilder();
+		if (!contextBuilder.hasCurrentContext() || !(contextBuilder.getCurrentNode() instanceof AllocationExpression)) {
 			// have thus far only ended up here with a generic array type,
 			// don't know if we want or need to deal with those
 			return;
 		}
 
-		AllocationExpression alloc = (AllocationExpression) stack.peek().node;
+		AllocationExpression alloc = (AllocationExpression) contextBuilder.getCurrentNode();
 		if (alloc.expectedType() instanceof ParameterizedTypeBinding) {
 			ParameterizedTypeBinding expectedType = (ParameterizedTypeBinding) alloc.expectedType();
 			if (expectedType.typeArguments() != null) {
@@ -862,12 +868,33 @@ public class ReferenceBuilder {
 			ref = getTypeReferenceFromProblemReferenceBinding((ProblemReferenceBinding) binding);
 		} else if (binding instanceof IntersectionTypeBinding18) {
 			ref = getTypeReferenceFromIntersectionTypeBinding((IntersectionTypeBinding18) binding);
+		} else if (binding instanceof UnresolvedReferenceBinding) {
+			ref = getTypeReferenceFromUnresolvedReferenceBinding((UnresolvedReferenceBinding) binding);
 		} else {
 			throw new RuntimeException("Unknown TypeBinding: " + binding.getClass() + " " + binding);
 		}
 		bindingCache.remove(binding);
 		this.exploringParameterizedBindings.remove(binding);
 		return ((CtTypeReference) ( ref));
+	}
+
+	/**
+	 * Resolves a {@link UnresolvedReferenceBinding} to their closest match.
+	 * For this we use the {@link UnresolvedReferenceBinding#closestMatch()} method. This is a best effort approach and can fail.
+	 *
+	 * @param binding the binding to resolve to a type reference.
+	 * @return a type reference or null if the binding has no closest match
+	 */
+	@SuppressWarnings("ReturnOfNull")
+	private CtTypeReference getTypeReferenceFromUnresolvedReferenceBinding(UnresolvedReferenceBinding binding) {
+		TypeBinding closestMatch = binding.closestMatch();
+		if (closestMatch != null) {
+			CtTypeReference ref = this.jdtTreeBuilder.getFactory().Core().createTypeReference();
+			ref.setSimpleName(new String(binding.sourceName()));
+			ref.setPackage(getPackageReference(binding.getPackage()));
+			return ref;
+		}
+		return null;
 	}
 
 	private static boolean isParameterizedProblemReferenceBinding(TypeBinding binding) {
@@ -1168,26 +1195,25 @@ public class ReferenceBuilder {
 		return bindingCache.get(b).clone();
 	}
 
-	<T> CtFieldReference getVariableReference(FieldBinding varbin) {
+	<T> CtFieldReference getVariableReference(TypeBinding type, FieldBinding varbin) {
 		CtFieldReference ref = this.jdtTreeBuilder.getFactory().Core().createFieldReference();
 		if (varbin == null) {
 			return ref;
 		}
 		ref.setSimpleName(new String(varbin.name));
 		ref.setType(this.<T>getTypeReference(varbin.type));
-
-		if (varbin.declaringClass != null) {
-			ref.setDeclaringType(getTypeReference(varbin.declaringClass));
+		if (type != null && type.isArrayType()) {
+			ref.setDeclaringType(getTypeReference(type));
 		} else {
-			ref.setDeclaringType(ref.getType() == null ? null : ref.getType().clone());
+			ref.setDeclaringType(getTypeReference(varbin.declaringClass));
 		}
 		ref.setFinal(varbin.isFinal());
 		ref.setStatic((varbin.modifiers & ClassFileConstants.AccStatic) != 0);
 		return ref;
 	}
 
-	<T> CtFieldReference getVariableReference(FieldBinding fieldBinding, char[] tokens) {
-		final CtFieldReference ref = getVariableReference(fieldBinding);
+	<T> CtFieldReference getVariableReference(TypeBinding type, FieldBinding fieldBinding, char[] tokens) {
+		final CtFieldReference ref = getVariableReference(type, fieldBinding);
 		if (fieldBinding != null) {
 			return ref;
 		}
@@ -1199,7 +1225,7 @@ public class ReferenceBuilder {
 	<T> CtVariableReference getVariableReference(VariableBinding varbin) {
 
 		if (varbin instanceof FieldBinding) {
-			return getVariableReference((FieldBinding) varbin);
+			return getVariableReference(((FieldBinding) varbin).declaringClass, (FieldBinding) varbin);
 		} else if (varbin instanceof LocalVariableBinding) {
 			final LocalVariableBinding localVariableBinding = (LocalVariableBinding) varbin;
 			if (localVariableBinding.declaration instanceof Argument && localVariableBinding.declaringScope instanceof MethodScope) {
@@ -1308,7 +1334,7 @@ public class ReferenceBuilder {
 	 */
 	public CtExecutableReference getLambdaExecutableReference(SingleNameReference singleNameReference) {
 		ASTPair potentialLambda = null;
-		for (ASTPair astPair : jdtTreeBuilder.getContextBuilder().stack) {
+		for (ASTPair astPair : jdtTreeBuilder.getContextBuilder().getAllContexts()) {
 			if (astPair.node instanceof LambdaExpression) {
 				potentialLambda = astPair;
 				// stop at innermost lambda, fixes #1100
