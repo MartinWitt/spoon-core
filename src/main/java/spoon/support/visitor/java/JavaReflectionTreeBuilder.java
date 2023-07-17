@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.visitor.java;
 
@@ -70,11 +70,12 @@ import spoon.support.visitor.java.reflect.RtParameter;
  * element comes from the reflection api, use {@link spoon.reflect.declaration.CtShadowable#isShadow()}.
  */
 public class JavaReflectionTreeBuilder extends JavaReflectionVisitorImpl {
-	private Deque<RuntimeBuilderContext> contexts = new ArrayDeque<>();
-	private Factory factory;
+	private final Deque<RuntimeBuilderContext> contexts;
+	private final Factory factory;
 
 	public JavaReflectionTreeBuilder(Factory factory) {
 		this.factory = factory;
+		this.contexts = new ArrayDeque<>();
 	}
 
 	private void enter(RuntimeBuilderContext context) {
@@ -87,46 +88,53 @@ public class JavaReflectionTreeBuilder extends JavaReflectionVisitorImpl {
 
 	/** transforms a java.lang.Class into a CtType (ie a shadow type in Spoon's parlance) */
 	public <T, R extends CtType> R scan(Class<T> clazz) {
-		CtPackage ctPackage;
-		CtType ctEnclosingClass;
-		if (clazz.getEnclosingClass() != null && !clazz.isAnonymousClass()) {
-			ctEnclosingClass = factory.Type().get(clazz.getEnclosingClass());
-			return ctEnclosingClass.getNestedType(clazz.getSimpleName());
-		} else {
-			if (clazz.getPackage() == null) {
-				ctPackage = factory.Package().getRootPackage();
+		// We modify and query our modified model in this part. If another thread were to do the same
+		// on the same model, things will explode (e.g. with a ParentNotInitialized exception).
+		// We only synchronize in the main entrypoint, as that should be enough for normal consumers.
+		// The shadow factory should not be modified in other places and nobody should be directly calling
+		// the visit methods.
+		synchronized (factory) {
+			CtPackage ctPackage;
+			CtType ctEnclosingClass;
+			if (clazz.getEnclosingClass() != null && !clazz.isAnonymousClass()) {
+				ctEnclosingClass = factory.Type().get(clazz.getEnclosingClass());
+				return ctEnclosingClass.getNestedType(clazz.getSimpleName());
 			} else {
-				ctPackage = factory.Package().getOrCreate(clazz.getPackage().getName());
+				if (clazz.getPackage() == null) {
+					ctPackage = factory.Package().getRootPackage();
+				} else {
+					ctPackage = factory.Package().getOrCreate(clazz.getPackage().getName());
+				}
+				if (contexts.isEmpty()) {
+					enter(new PackageRuntimeBuilderContext(ctPackage));
+				}
+				boolean visited = false;
+				if (clazz.isAnnotation()) {
+					visited = true;
+					visitAnnotationClass((Class<Annotation>) clazz);
+				}
+				if (clazz.isInterface() && !visited) {
+					visited = true;
+					visitInterface(clazz);
+				}
+				if (clazz.isEnum() && !visited) {
+					visited = true;
+					visitEnum(clazz);
+				}
+				if (MethodHandleUtils.isRecord(clazz) && !visited) {
+					visited = true;
+					visitRecord(clazz);
+				}
+				if (!visited) {
+					visitClass(clazz);
+				}
+				exit();
+				final R type = ctPackage.getType(clazz.getSimpleName());
+				if (clazz.isPrimitive() && type.getParent() instanceof CtPackage) {
+					type.setParent(null); // primitive type isn't in a package.
+				}
+				return type;
 			}
-			if (contexts.isEmpty()) {
-				enter(new PackageRuntimeBuilderContext(ctPackage));
-			}
-			boolean visited = false;
-			if (clazz.isAnnotation()) {
-				visited = true;
-				visitAnnotationClass((Class<Annotation>) clazz);
-			}
-			if (clazz.isInterface() && !visited) {
-				visited = true;
-				visitInterface(clazz);
-			}
-			if (clazz.isEnum() && !visited) {
-				visited = true;
-				visitEnum(clazz);
-			}
-			if (MethodHandleUtils.isRecord(clazz) && !visited) {
-				visited = true;
-				visitRecord(clazz);
-			}
-			if (!visited) {
-				visitClass(clazz);
-			}
-			exit();
-			final R type = ctPackage.getType(clazz.getSimpleName());
-			if (clazz.isPrimitive() && type.getParent() instanceof CtPackage) {
-				type.setParent(null); // primitive type isn't in a package.
-			}
-			return type;
 		}
 	}
 
