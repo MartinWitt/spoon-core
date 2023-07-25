@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.support.adaption;
 
@@ -239,7 +239,7 @@ public class TypeAdaptor {
 			newParameter.setType(adaptType(inputMethod.getParameters().get(i).getType()));
 		}
 
-		Set<CtTypeReference> newThrownTypes = clonedMethod.getThrownTypes()
+		Set<CtTypeReference> newThrownTypes = inputMethod.getThrownTypes()
 			.stream()
 			.map(this::adaptType)
 			.map(it -> ((CtTypeReference) ( it)))
@@ -556,10 +556,16 @@ public class TypeAdaptor {
 		return Optional.of(((CtExecutable) ( parent)));
 	}
 
+	@SuppressWarnings("AssignmentToMethodParameter")
 	private DeclarationNode buildHierarchyFrom(CtTypeReference startReference, CtType startType,
 		CtTypeReference end) {
 		CtType endType = findDeclaringType(end);
 		Map<CtTypeReference, DeclarationNode> declarationNodes = new HashMap<>();
+
+		if (needToMoveStartTypeToEnclosingClass(end, endType)) {
+			startType = moveStartTypeToEnclosingClass(hierarchyStart, endType.getReference());
+			startReference = startType.getReference();
+		}
 
 		DeclarationNode root = buildDeclarationHierarchyFrom(
 			startType.getReference(),
@@ -580,6 +586,31 @@ public class TypeAdaptor {
 			.orElse(null);
 	}
 
+	private boolean needToMoveStartTypeToEnclosingClass(CtTypeReference end, CtType endType) {
+		if (!(end instanceof CtTypeParameterReference)) {
+			return false;
+		}
+		// Declaring type is not the same as the inner type (i.e. the type parameter was declared on an
+		// enclosing type)
+		CtType parentType = end.getParent(CtType.class);
+		parentType = resolveTypeParameterToDeclarer(parentType);
+
+		return !parentType.getQualifiedName().equals(endType.getQualifiedName());
+	}
+
+	private CtType moveStartTypeToEnclosingClass(CtType start, CtTypeReference endRef) {
+		CtType current = start;
+		while (current != null) {
+			if (isSubtype(current, endRef)) {
+				return current;
+			}
+			current = current.getDeclaringType();
+		}
+		throw new SpoonException(
+				"Did not find a suitable enclosing type to start parameter type adaption from"
+		);
+	}
+
 	/**
 	 * This method attempts to find a suitable end type for building our hierarchy.
 	 * <br>
@@ -595,20 +626,33 @@ public class TypeAdaptor {
 	 */
 	private CtType findDeclaringType(CtTypeReference reference) {
 		CtType type = null;
-		if (reference.isParentInitialized()) {
+		// Prefer declaration to parent. This will be different if the type parameter is declared on an
+		// enclosing class.
+		if (reference instanceof CtTypeParameterReference) {
+			type = reference.getTypeDeclaration();
+		}
+		if (type == null && reference.isParentInitialized()) {
 			type = reference.getParent(CtType.class);
 		}
 		if (type == null) {
 			type = reference.getTypeDeclaration();
 		}
-		if (type instanceof CtTypeParameter) {
-			CtFormalTypeDeclarer declarer = ((CtTypeParameter) (type)).getTypeParameterDeclarer();
+
+		return resolveTypeParameterToDeclarer(type);
+	}
+
+	private static CtType resolveTypeParameterToDeclarer(CtType parentType) {
+		if (parentType instanceof CtTypeParameter) {
+			CtFormalTypeDeclarer declarer = ((CtTypeParameter) (parentType)).getTypeParameterDeclarer();
 			if (declarer instanceof CtType) {
 				return ((CtType) ( declarer));
+			} else {
+				return declarer.getDeclaringType();
 			}
-			return declarer.getDeclaringType();
 		}
-		return type;
+		// Could not resolve type parameter declarer (no class path mode?).
+		// Type adaption results will not be accurate, this is just a wild (and probably wrong) guess.
+		return parentType;
 	}
 
 	private DeclarationNode buildDeclarationHierarchyFrom(
