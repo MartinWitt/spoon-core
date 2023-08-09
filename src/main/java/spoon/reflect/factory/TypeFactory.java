@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.reflect.factory;
 
@@ -92,7 +92,9 @@ public class TypeFactory extends SubFactory {
 	public final CtTypeReference ENUM = createReference(Enum.class);
 	public final CtTypeReference OMITTED_TYPE_ARG_TYPE = createReference(CtTypeReference.OMITTED_TYPE_ARG_NAME);
 
-	private final Map<Class<?>, CtType> shadowCache = new ConcurrentHashMap<>();
+	// This map MUST provide a useful computeIfAbsent method in the face of concurrency.
+	// Therefore, we declare it as a ConcurrentHashMap directly.
+	private final ConcurrentHashMap<Class<?>, CtType> shadowCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Returns a reference on the null type (type of null).
@@ -290,6 +292,9 @@ public class TypeFactory extends SubFactory {
 	 */
 	public CtArrayTypeReference createArrayReference(CtTypeReference reference, int n) {
 		CtTypeReference componentType;
+		if (n < 1) {
+			throw new SpoonException("Array dimension must be >= 1");
+		}
 		if (n == 1) {
 			return createArrayReference(reference);
 		}
@@ -552,35 +557,33 @@ public class TypeFactory extends SubFactory {
 	public <T> CtType get(Class<?> cl) {
 		final CtType aType = get(cl.getName());
 		if (aType == null) {
-			final CtType shadowClass = ((CtType) (this.shadowCache.get(cl)));
-			if (shadowClass == null) {
-				CtType newShadowClass;
-				try {
-					newShadowClass = new JavaReflectionTreeBuilder(getShadowFactory()).scan((Class<T>) cl);
-				} catch (Throwable e) {
-					Launcher.LOGGER.warn("cannot create shadow class: {}", cl.getName(), e);
-
-					newShadowClass = getShadowFactory().Core().createClass();
-					newShadowClass.setSimpleName(cl.getSimpleName());
-					newShadowClass.setShadow(true);
-					getShadowFactory().Package().getOrCreate(cl.getPackage().getName()).addType(newShadowClass);
-				}
-				newShadowClass.setFactory(factory);
-				newShadowClass.accept(new CtScanner() {
-					@Override
-					public void scan(CtElement element) {
-						if (element != null) {
-							element.setFactory(factory);
-						}
-					}
-				});
-				this.shadowCache.put(cl, newShadowClass);
-				return newShadowClass;
-			} else {
-				return shadowClass;
-			}
+			return ((CtType) (this.shadowCache.computeIfAbsent(cl, this::buildNewShadowClass)));
 		}
 		return aType;
+	}
+
+	private CtType buildNewShadowClass(Class<?> cl) {
+		CtType newShadowClass;
+		try {
+			newShadowClass = new JavaReflectionTreeBuilder(getShadowFactory()).scan(cl);
+		} catch (Throwable e) {
+			Launcher.LOGGER.warn("cannot create shadow class: {}", cl.getName(), e);
+
+			newShadowClass = getShadowFactory().Core().createClass();
+			newShadowClass.setSimpleName(cl.getSimpleName());
+			newShadowClass.setShadow(true);
+			getShadowFactory().Package().getOrCreate(cl.getPackage().getName()).addType(newShadowClass);
+		}
+		newShadowClass.setFactory(factory);
+		newShadowClass.accept(new CtScanner() {
+			@Override
+			public void scan(CtElement element) {
+				if (element != null) {
+					element.setFactory(factory);
+				}
+			}
+		});
+		return newShadowClass;
 	}
 
 	private transient Factory shadowFactory;
