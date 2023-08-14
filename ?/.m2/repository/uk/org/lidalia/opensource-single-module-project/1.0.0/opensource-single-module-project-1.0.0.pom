@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>uk.org.lidalia</groupId>
+    <version>1.0.0</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>opensource-single-module-project</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Lidalia Open Source Single Module Project POM</name>
+  <description>A convenient parent pom for defining open source single module projects on github.</description>
+  <url>http://projects.lidalia.org.uk/${project.artifactId}</url>
+  <licenses>
+    <license>
+      <name>MIT X11 License</name>
+      <url>https://github.com/Mahoney/lidalia-parent/raw/master/X11-LICENSE.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>http://github.com/Mahoney/${project.artifactId}/issues</url>
+  </issueManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>stage-for-scm-publish</id>
+            <phase>post-site</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <copy todir="${project.build.directory}/site/site-versions/${project.version}">
+                  <fileset dir="${project.build.directory}/site">
+                    <exclude name="site-versions" />
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <scmBranch>gh-pages</scmBranch>
+          <pubScmUrl>scm:git:git@github.com:Mahoney/${project.artifactId}.git</pubScmUrl>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>site-versions</ignorePathToDelete>
+          </ignorePathsToDelete>
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <phase>site-deploy</phase>
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <skipDeploy>true</skipDeploy>
+        </configuration>
+        <executions>
+          <execution>
+            <id>stage-for-scm-publish</id>
+            <phase>post-site</phase>
+            <goals>
+              <goal>stage</goal>
+            </goals>
+            <configuration>
+              <skipDeploy>false</skipDeploy>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
