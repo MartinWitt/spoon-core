@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon.compiler;
 
@@ -314,7 +314,7 @@ public interface Environment {
 	 * classpath are handled with the reference mechanism. The "simplename" of
 	 * the reference object refers to the unbound identifier.
 	 *
-	 * This option facilitates the use of Spoon when is is hard to have the
+	 * This option facilitates the use of Spoon when it is hard to have the
 	 * complete and correct classpath, for example for mining software
 	 * repositories.
 	 *
