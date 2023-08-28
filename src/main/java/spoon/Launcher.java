@@ -1,9 +1,9 @@
 /*
  * SPDX-License-Identifier: (MIT OR CECILL-C)
  *
- * Copyright (C) 2006-2019 INRIA and contributors
+ * Copyright (C) 2006-2023 INRIA and contributors
  *
- * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) of the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
+ * Spoon is available either under the terms of the MIT License (see LICENSE-MIT.txt) or the Cecill-C License (see LICENSE-CECILL-C.txt). You as the user are entitled to choose the terms under which to adopt Spoon.
  */
 package spoon;
 
@@ -551,7 +551,7 @@ public class Launcher implements SpoonAPI {
 
 	protected void reportClassPathMode() {
 		String cpmode = jsapActualArgs.getString("cpmode").toUpperCase();
-		factory.getEnvironment().report(null, Level.INFO, "Running in " + cpmode + " mode (doc: http://spoon.gforge.inria.fr/launcher.html).");
+		factory.getEnvironment().report(null, Level.DEBUG, "Running in " + cpmode + " mode (doc: http://spoon.gforge.inria.fr/launcher.html).");
 	}
 
 	/**
@@ -658,10 +658,10 @@ public class Launcher implements SpoonAPI {
 		return c;
 	}
 
-	@Override
-	public SpoonModelBuilder createCompiler() {
-		return createCompiler(factory);
-	}
+		@Override
+		public SpoonModelBuilder createCompiler() {
+			return createCompiler(factory);
+		}
 
 	/**
 	 * Creates a new Spoon Java compiler with a default factory and a list of
@@ -673,20 +673,20 @@ public class Launcher implements SpoonAPI {
 		return c;
 	}
 
-	@Override
-	public Factory createFactory() {
-		return new FactoryImpl(new DefaultCoreFactory(), createEnvironment());
-	}
+		@Override
+		public Factory createFactory() {
+			return new FactoryImpl(new DefaultCoreFactory(), createEnvironment());
+		}
 
-	@Override
-	public Factory getFactory() {
-		return factory;
-	}
+		@Override
+		public Factory getFactory() {
+			return factory;
+		}
 
-	@Override
-	public Environment createEnvironment() {
-		return new StandardEnvironment();
-	}
+		@Override
+		public Environment createEnvironment() {
+			return new StandardEnvironment();
+		}
 
 	public JavaOutputProcessor createOutputWriter() {
 		/*
@@ -703,172 +703,172 @@ public class Launcher implements SpoonAPI {
 		return getEnvironment().createPrettyPrinter();
 	}
 
-	/**
-	 * Runs Spoon using the given compiler, with the given run options. A Spoon
-	 * run will perform the following tasks:
-	 *
-	 * <ol>
-	 * <li>Source model building in the given compiler:
-	 * {@link SpoonModelBuilder#build()}.</li>
-	 * <li>Template model building in the given factory (if any template source
-	 * is given): {@link SpoonModelBuilder#build()}.</li>
-	 * <li>Model processing with the list of given processors if any:
-	 * {@link SpoonModelBuilder#instantiateAndProcess(List)}.</li>
-	 * <li>Processed Source code printing and generation (can be disabled with
-	 * {@link OutputType#NO_OUTPUT}):
-	 * {@link SpoonModelBuilder#generateProcessedSourceFiles(OutputType)}.</li>
-	 * <li>Processed source code compilation (optional):
-	 * </ol>
-	 */
-	@Override
-	public void run() {
-		Environment env = modelBuilder.getFactory().getEnvironment();
-		env.reportProgressMessage(getVersionMessage());
-		env.reportProgressMessage("running Spoon...");
-		env.reportProgressMessage("start processing...");
-		long tstart = System.currentTimeMillis();
-		buildModel();
-		process();
-		prettyprint();
-		if (env.shouldCompile()) {
-			// we compile the types from the factory, they may have been modified by some processors
-			modelBuilder.compile(InputType.CTTYPES);
+		/**
+		 * Runs Spoon using the given compiler, with the given run options. A Spoon
+		 * run will perform the following tasks:
+		 *
+		 * <ol>
+		 * <li>Source model building in the given compiler:
+		 * {@link SpoonModelBuilder#build()}.</li>
+		 * <li>Template model building in the given factory (if any template source
+		 * is given): {@link SpoonModelBuilder#build()}.</li>
+		 * <li>Model processing with the list of given processors if any:
+		 * {@link SpoonModelBuilder#instantiateAndProcess(List)}.</li>
+		 * <li>Processed Source code printing and generation (can be disabled with
+		 * {@link OutputType#NO_OUTPUT}):
+		 * {@link SpoonModelBuilder#generateProcessedSourceFiles(OutputType)}.</li>
+		 * <li>Processed source code compilation (optional):
+		 * </ol>
+		 */
+		@Override
+		public void run() {
+			Environment env = modelBuilder.getFactory().getEnvironment();
+			env.debugMessage(getVersionMessage());
+			env.reportProgressMessage("Running Spoon...");
+			env.debugMessage("Start processing...");
+			long tstart = System.currentTimeMillis();
+			buildModel();
+			process();
+			prettyprint();
+			if (env.shouldCompile()) {
+				// we compile the types from the factory, they may have been modified by some processors
+				modelBuilder.compile(InputType.CTTYPES);
+			}
+			long t = System.currentTimeMillis();
+			env.debugMessage("Program spooning done in " + (t - tstart) + " ms");
+			env.reportEnd();
 		}
-		long t = System.currentTimeMillis();
-		env.debugMessage("program spooning done in " + (t - tstart) + " ms");
-		env.reportEnd();
-	}
 
 	private String getVersionMessage() {
 		return "Spoon version " + ResourceBundle.getBundle("spoon").getString("application.version");
 	}
 
 	public static final IOFileFilter RESOURCES_FILE_FILTER = new IOFileFilter() {
-		@Override
-		public boolean accept(File file) {
-			return !file.getName().endsWith(".java");
-		}
+			@Override
+			public boolean accept(File file) {
+				return !file.getName().endsWith(".java");
+			}
 
-		@Override
-		public boolean accept(File file, String s) {
-			return false;
-		}
-	};
+			@Override
+			public boolean accept(File file, String s) {
+				return false;
+			}
+		};
 
 	public static final IOFileFilter ALL_DIR_FILTER = new IOFileFilter() {
-		@Override
-		public boolean accept(File file) {
-			return true;
-		}
-
-		@Override
-		public boolean accept(File file, String s) {
-			return false;
-		}
-	};
-
-	@Override
-	public CtModel buildModel() {
-		long tstart = System.currentTimeMillis();
-		modelBuilder.build();
-		getEnvironment().debugMessage("model built in " + (System.currentTimeMillis() - tstart));
-		return modelBuilder.getFactory().getModel();
-	}
-
-	@Override
-	public void process() {
-		long tstart = System.currentTimeMillis();
-		modelBuilder.instantiateAndProcess(getProcessorTypes());
-		modelBuilder.process(getProcessors());
-		getEnvironment().debugMessage("model processed in " + (System.currentTimeMillis() - tstart) + " ms");
-	}
-
-	@Override
-	public void prettyprint() {
-		long tstart = System.currentTimeMillis();
-		try {
-			modelBuilder.generateProcessedSourceFiles(getEnvironment().getOutputType(), typeFilter);
-		} catch (RuntimeException e) {
-			if (!(e instanceof SpoonException)) {
-				// contract: we encapuslate all Spoon exceptions into
-				// a single type
-				throw new SpoonException(e);
-			} else {
-				// don't wrap a SpoonException into another useless one
-				throw e;
+			@Override
+			public boolean accept(File file) {
+				return true;
 			}
+
+			@Override
+			public boolean accept(File file, String s) {
+				return false;
+			}
+		};
+
+		@Override
+		public CtModel buildModel() {
+			long tstart = System.currentTimeMillis();
+			modelBuilder.build();
+			getEnvironment().debugMessage("model built in " + (System.currentTimeMillis() - tstart));
+			return modelBuilder.getFactory().getModel();
 		}
-		final Path outputPath = getEnvironment().getDefaultFileGenerator().getOutputDirectory().toPath();
-		if (!getEnvironment().getOutputType().equals(OutputType.NO_OUTPUT) && getEnvironment().isCopyResources()) {
-			for (File dirInputSource : modelBuilder.getInputSources()) {
-				if (dirInputSource.isDirectory()) {
-					final Path dirInputSourceAsPath = dirInputSource.toPath();
-					final Collection<?> resources = FileUtils.listFiles(dirInputSource, RESOURCES_FILE_FILTER, ALL_DIR_FILTER);
-					for (Object resource : resources) {
-						final Path resourcePath = ((File) (resource)).toPath();
-						final Path relativePath = dirInputSourceAsPath.relativize(resourcePath);
-						final Path targetPath = outputPath.resolve(relativePath).getParent();
-						try {
-							FileUtils.copyFileToDirectory(((File) (resource)), targetPath.toFile());
-						} catch (IOException e) {
-							throw new SpoonException(e);
+
+		@Override
+		public void process() {
+			long tstart = System.currentTimeMillis();
+			modelBuilder.instantiateAndProcess(getProcessorTypes());
+			modelBuilder.process(getProcessors());
+			getEnvironment().debugMessage("model processed in " + (System.currentTimeMillis() - tstart) + " ms");
+		}
+
+		@Override
+		public void prettyprint() {
+			long tstart = System.currentTimeMillis();
+			try {
+				modelBuilder.generateProcessedSourceFiles(getEnvironment().getOutputType(), typeFilter);
+			} catch (RuntimeException e) {
+				if (!(e instanceof SpoonException)) {
+					// contract: we encapuslate all Spoon exceptions into
+					// a single type
+					throw new SpoonException(e);
+				} else {
+					// don't wrap a SpoonException into another useless one
+					throw e;
+				}
+			}
+			final Path outputPath = getEnvironment().getDefaultFileGenerator().getOutputDirectory().toPath();
+			if (!getEnvironment().getOutputType().equals(OutputType.NO_OUTPUT) && getEnvironment().isCopyResources()) {
+				for (File dirInputSource : modelBuilder.getInputSources()) {
+					if (dirInputSource.isDirectory()) {
+						final Path dirInputSourceAsPath = dirInputSource.toPath();
+						final Collection<File> resources = FileUtils.listFiles(dirInputSource, RESOURCES_FILE_FILTER, ALL_DIR_FILTER);
+						for (File resource : resources) {
+							final Path resourcePath = resource.toPath();
+							final Path relativePath = dirInputSourceAsPath.relativize(resourcePath);
+							final Path targetPath = outputPath.resolve(relativePath).getParent();
+							try {
+								FileUtils.copyFileToDirectory(resource, targetPath.toFile());
+							} catch (IOException e) {
+								throw new SpoonException(e);
+							}
 						}
 					}
 				}
 			}
+			getEnvironment().debugMessage("pretty-printed in " + (System.currentTimeMillis() - tstart) + " ms");
 		}
-		getEnvironment().debugMessage("pretty-printed in " + (System.currentTimeMillis() - tstart) + " ms");
-	}
 
 	public SpoonModelBuilder getModelBuilder() {
 		return modelBuilder;
 	}
 
-	@Override
-	public void setSourceOutputDirectory(String path) {
-		setSourceOutputDirectory(new File(path));
-	}
+		@Override
+		public void setSourceOutputDirectory(String path) {
+			setSourceOutputDirectory(new File(path));
+		}
 
-	@Override
-	public void setSourceOutputDirectory(File outputDirectory) {
-		getEnvironment().setSourceOutputDirectory(outputDirectory);
-		getEnvironment().setDefaultFileGenerator(createOutputWriter());
-	}
+		@Override
+		public void setSourceOutputDirectory(File outputDirectory) {
+			getEnvironment().setSourceOutputDirectory(outputDirectory);
+			getEnvironment().setDefaultFileGenerator(createOutputWriter());
+		}
 
-	@Override
-	public void setOutputFilter(Filter<CtType> typeFilter) {
-		this.typeFilter = typeFilter;
-	}
+		@Override
+		public void setOutputFilter(Filter<CtType> typeFilter) {
+			this.typeFilter = typeFilter;
+		}
 
-	@Override
-	public void setOutputFilter(final String... qualifedNames) {
-		setOutputFilter(new AbstractFilter<CtType>(spoon.reflect.declaration.CtType.class) {
-			@Override
-			public boolean matches(CtType element) {
-				for (String generateFile : qualifedNames) {
-					if (generateFile.equals(element.getQualifiedName())) {
-						return true;
+		@Override
+		public void setOutputFilter(final String... qualifedNames) {
+			setOutputFilter(new AbstractFilter<CtType>(spoon.reflect.declaration.CtType.class) {
+				@Override
+				public boolean matches(CtType element) {
+					for (String generateFile : qualifedNames) {
+						if (generateFile.equals(element.getQualifiedName())) {
+							return true;
+						}
 					}
+					return false;
 				}
-				return false;
-			}
-		});
-	}
+			});
+		}
 
-	@Override
-	public void setBinaryOutputDirectory(String path) {
-		getFactory().getEnvironment().setBinaryOutputDirectory(path);
-	}
+		@Override
+		public void setBinaryOutputDirectory(String path) {
+			getFactory().getEnvironment().setBinaryOutputDirectory(path);
+		}
 
-	@Override
-	public void setBinaryOutputDirectory(File outputDirectory) {
-		setBinaryOutputDirectory(outputDirectory.getPath());
-	}
+		@Override
+		public void setBinaryOutputDirectory(File outputDirectory) {
+			setBinaryOutputDirectory(outputDirectory.getPath());
+		}
 
-	@Override
-	public CtModel getModel() {
-		return factory.getModel();
-	}
+		@Override
+		public CtModel getModel() {
+			return factory.getModel();
+		}
 
 	/** returns the AST of an inline class */
 	public static CtClass parseClass(String code) {
