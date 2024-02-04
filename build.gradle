@@ -1,7 +1,7 @@
 plugins {
 	id 'application'
 	id "io.quarkus" version "3.2.0.CR1"
-	id "com.diffplug.spotless" version "6.13.0"
+	id "com.diffplug.spotless" version "6.25.0"
 	id "org.kordamp.gradle.jandex" version "1.1.0"
 	id "net.ltgt.errorprone" version "3.1.0"
 	id("maven-publish")
