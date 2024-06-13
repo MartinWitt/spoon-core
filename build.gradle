@@ -18,7 +18,7 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 	implementation 'fr.inria.gforge.spoon:spoon-core:10.2.0'
 	implementation 'org.apache.maven:maven-embedder:3.8.7'
-	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
+	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.10.0.202406032230-r'
 	implementation group: 'io.quarkus.arc', name: 'arc', version: '3.2.0.CR1'
 	implementation 'io.quarkiverse.githubapi:quarkus-github-api:1.314.1'
 	implementation(enforcedPlatform('io.quarkus:quarkus-bom:3.2.0.CR1'))
